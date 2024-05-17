@@ -13,13 +13,24 @@ datasource db {
   url      = "file:./dev.db"
 }
 
-model Projects {
+model Project {
   id           Int      @id @default(autoincrement())
   createdAt    DateTime @default(now())
   name         String
-  description  String
+  description  String?
+  port         Int
   gitHubUrl    String
   mainBranch   String
   buildCommand String
   startCommand String
+  EnvVars      EnvVar[]
+}
+
+model EnvVar {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  key       String
+  value     String
+  projectId Int
+  project   Project  @relation(fields: [projectId], references: [id])
 }

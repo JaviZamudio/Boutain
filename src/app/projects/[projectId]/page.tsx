@@ -34,6 +34,19 @@ export default function IndividualProjectPage({ params }: { params: { projectId:
     })
   };
 
+  const handleDeploy = async () => {
+    const resBody = await fetch(`/api/projects/${params.projectId}`, {
+      method: "POST",
+    }).then((res) => res.json());
+
+    if (resBody.code === "OK") {
+      alert("Project re-deployed successfully!");
+      fetchProject();
+    } else {
+      alert("Failed to re-deploy project");
+    }
+  }
+
   useEffect(() => {
     fetchProject();
   }, []);
@@ -68,6 +81,7 @@ export default function IndividualProjectPage({ params }: { params: { projectId:
           endContent={<span className="material-symbols-outlined filled">rocket_launch</span>}
           color="primary"
           variant="ghost"
+          onClick={handleDeploy}
         >
           Deploy
         </Button>

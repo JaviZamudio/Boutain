@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { deployProject } from ".";
 
 const prisma = new PrismaClient();
 
@@ -45,6 +46,12 @@ export async function POST(request: NextRequest) {
             value,
         })),
     });
+
+    const deployResult = deployProject(createProjectResult.id);
+
+    if (!deployResult) {
+        return NextResponse.json({ code: "ERROR", message: "Failed to deploy project" });
+    }
 
     return NextResponse.json({ code: "OK", message: "Project created", data: createProjectResult });
 }

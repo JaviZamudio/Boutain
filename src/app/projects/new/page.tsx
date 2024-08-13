@@ -47,16 +47,18 @@ export default function NewProjectPage() {
   };
 
   return (
-    <main>
-      <h1>Create a new project</h1>
-      <form onSubmit={handleSubmit}>
+    <main className="p-4">
+      <h1 className="text-3xl font-bold text-center">
+        Create a New Project
+      </h1>
+      <form onSubmit={handleSubmit} className="space-y-4 max-w-xs">
         <h2>Project details</h2>
-        <Input label="Project name" placeholder="My new project" onValueChange={(value) => setForm({ ...form, name: value })} value={form.name} />
+        <Input label="Project name" placeholder="My new project" onValueChange={(value) => setForm({ ...form, name: value })} value={form.name} isRequired />
         <Textarea label="Description" placeholder="A short description of the project" onValueChange={(value) => setForm({ ...form, description: value })} value={form.description} />
-        <Input label="GitHub URL" placeholder="https://github.com/username/repo" onValueChange={(value) => setForm({ ...form, gitHubUrl: value })} value={form.gitHubUrl} />
-        <Input label="Main branch" placeholder="main" onValueChange={(value) => setForm({ ...form, mainBranch: value })} value={form.mainBranch} />
-        <Input label="Build command" placeholder="npm run build" onValueChange={(value) => setForm({ ...form, buildCommand: value })} value={form.buildCommand} />
-        <Input label="Start command" placeholder="npm run start" onValueChange={(value) => setForm({ ...form, startCommand: value })} value={form.startCommand} />
+        <Input label="GitHub URL" placeholder="https://github.com/username/repo" onValueChange={(value) => setForm({ ...form, gitHubUrl: value })} value={form.gitHubUrl} isRequired />
+        <Input label="Main branch" placeholder="main" onValueChange={(value) => setForm({ ...form, mainBranch: value })} value={form.mainBranch} isRequired />
+        <Input label="Build command" placeholder="npm run build" onValueChange={(value) => setForm({ ...form, buildCommand: value })} value={form.buildCommand} isRequired />
+        <Input label="Start command" placeholder="npm run start" onValueChange={(value) => setForm({ ...form, startCommand: value })} value={form.startCommand} isRequired />
 
         <div>
           <h2>Environment variables</h2>

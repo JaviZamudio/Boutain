@@ -13,7 +13,7 @@ interface Project {
   mainBranch: string;
 }
 export default function ProjectsPage() {
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [projects, setProjects] = useState<Project[]>();
 
   const fetchProjects = async () => {
     const response = await fetch("/api/projects");
@@ -44,28 +44,29 @@ export default function ProjectsPage() {
           <TableColumn>Port</TableColumn>
           <TableColumn>Actions</TableColumn>
         </TableHeader>
-        <TableBody isLoading={!projects.length} loadingContent={<Spinner label="Loading projects..." />}>
-          {projects.map((project) => (
-            <TableRow key={project.id}>
-              <TableCell>
-                <Link href={`/projects/${project.id}`}>
-                  {project.name}
-                </Link>
-              </TableCell>
-              <TableCell>
-                <Link href={project.gitHubUrl} isExternal showAnchorIcon>
-                  {project.gitHubUrl}
-                </Link>
-              </TableCell>
-              <TableCell>{project.mainBranch}</TableCell>
-              <TableCell>{project.port}</TableCell>
-              <TableCell>
-                <Button endContent={<span className="material-symbols-outlined">chevron_right</span>} as={Link} href={`/projects/${project.id}`}>
-                  View
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
+        <TableBody isLoading={!projects} loadingContent={<Spinner label="Loading projects..." />} emptyContent={"No projects found"}>
+          {!projects ? [] :
+            projects.map((project) => (
+              <TableRow key={project.id}>
+                <TableCell>
+                  <Link href={`/projects/${project.id}`}>
+                    {project.name}
+                  </Link>
+                </TableCell>
+                <TableCell>
+                  <Link href={project.gitHubUrl} isExternal showAnchorIcon>
+                    {project.gitHubUrl}
+                  </Link>
+                </TableCell>
+                <TableCell>{project.mainBranch}</TableCell>
+                <TableCell>{project.port}</TableCell>
+                <TableCell>
+                  <Button endContent={<span className="material-symbols-outlined">chevron_right</span>} as={Link} href={`/projects/${project.id}`}>
+                    View
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
         </TableBody>
       </Table>
     </main >

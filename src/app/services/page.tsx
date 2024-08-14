@@ -1,8 +1,8 @@
 "use client";
 
 import { Table, TableBody, TableCell, TableHeader, TableRow, TableColumn, Button, Spinner, Link } from "@nextui-org/react";
-import NextLink from "next/link";
-import { Key, useEffect, useState } from "react";
+import { Project } from "@prisma/client";
+import { useEffect, useState } from "react";
 
 interface Service {
   id: number;
@@ -11,7 +11,9 @@ interface Service {
   port: number;
   gitHubUrl: string;
   mainBranch: string;
+  Project: Project
 }
+
 export default function ServicesPage() {
   const [services, setServices] = useState<Service[]>();
 

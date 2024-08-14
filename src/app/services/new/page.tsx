@@ -1,9 +1,11 @@
 "use client"
 
 import { Button, Input, Link, Textarea } from "@nextui-org/react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function NewServicePage() {
+  const router = useRouter()
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -31,6 +33,7 @@ export default function NewServicePage() {
 
     if (resBody.code === "OK") {
       alert("service created successfully! \n On port: " + resBody.data.port);
+      router.push("/services")
     } else {
       alert("Failed to create service");
     }

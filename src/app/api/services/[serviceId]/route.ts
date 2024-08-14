@@ -11,6 +11,7 @@ export async function GET(request: NextRequest, { params }: { params: { serviceI
         },
         include: {
             EnvVars: true,
+            Project: true
         },
     });
 

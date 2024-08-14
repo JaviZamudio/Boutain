@@ -1,10 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-import { deployProject } from ".";
+import { deployService } from ".";
 
 const prisma = new PrismaClient();
 
-interface PostProjectBody {
+interface PostServicetBody {
     name: string;
     description: string;
     gitHubUrl: string;
@@ -14,10 +14,11 @@ interface PostProjectBody {
     envVars: { key: string; value: string }[];
 }
 export async function POST(request: NextRequest) {
-    const { name, description, gitHubUrl, mainBranch, buildCommand, startCommand, envVars }: PostProjectBody = await request.json();
+    const { name, description, gitHubUrl, mainBranch, buildCommand, startCommand, envVars }: PostServicetBody = await request.json();
 
+    // Set the port to the next available port
     let port = 0;
-    const lastPort = await prisma.project.findFirst({
+    const lastPort = await prisma.service.findFirst({
         select: {
             port: true,
         },
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
     });
     port = lastPort ? lastPort.port + 1 : 3000;
 
-    const createProjectResult = await prisma.project.create({
+    const createServiceResult = await prisma.service.create({
         data: {
             name,
             description: description || null,
@@ -36,32 +37,34 @@ export async function POST(request: NextRequest) {
             buildCommand,
             startCommand,
             port,
+            // TODO: Get the projectId from the user's session
+            projectId: 1, // "Default" project
         },
     });
 
     await prisma.envVar.createMany({
         data: envVars.map(({ key, value }) => ({
-            projectId: createProjectResult.id,
+            serviceId: createServiceResult.id,
             key,
             value,
         })),
     });
 
-    const deployResult = deployProject(createProjectResult.id);
+    const deployResult = deployService(createServiceResult.id);
 
     if (!deployResult) {
-        return NextResponse.json({ code: "ERROR", message: "Failed to deploy project" });
+        return NextResponse.json({ code: "ERROR", message: "Failed to deploy Service" });
     }
 
-    return NextResponse.json({ code: "OK", message: "Project created", data: createProjectResult });
+    return NextResponse.json({ code: "OK", message: "Service created", data: createServiceResult });
 }
 
 export async function GET() {
-    const projects = await prisma.project.findMany({
+    const services = await prisma.service.findMany({
         include: {
             EnvVars: true,
         },
     });
 
-    return NextResponse.json({ code: "OK", message: "Projects fetched", data: projects });
+    return NextResponse.json({ code: "OK", message: "Services fetched", data: services });
 }

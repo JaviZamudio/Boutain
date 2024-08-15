@@ -4,6 +4,12 @@
 import { NextUIProvider } from '@nextui-org/react';
 import { useRouter } from 'next/navigation'
 
+import Link from 'next/link';
+import Image from 'next/image';
+
+export { Link as NextLink };
+export { Image as NextImage };
+
 export function GlobalProviders({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 

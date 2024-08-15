@@ -1,17 +1,14 @@
 "use client"
 
 import { Button, Input, Link, Textarea } from "@nextui-org/react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function NewProjectPage() {
+  const router = useRouter();
   const [form, setForm] = useState({
     name: "",
     description: "",
-    gitHubUrl: "",
-    mainBranch: "",
-    buildCommand: "",
-    startCommand: "",
-    envVars: [] as { key: string; value: string }[],
   });
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -30,20 +27,12 @@ export default function NewProjectPage() {
     console.log(resBody);
 
     if (resBody.code === "OK") {
-      alert("Project created successfully! \n On port: " + resBody.data.port);
+      alert("Project created successfully!");
     } else {
       alert("Failed to create project");
     }
 
-    setForm({
-      name: "",
-      description: "",
-      gitHubUrl: "",
-      mainBranch: "",
-      buildCommand: "",
-      startCommand: "",
-      envVars: [],
-    });
+    router.push(`/projects/${resBody.data.id}`);
   };
 
   return (
@@ -55,25 +44,8 @@ export default function NewProjectPage() {
         <h2>Project details</h2>
         <Input label="Project name" placeholder="My new project" onValueChange={(value) => setForm({ ...form, name: value })} value={form.name} isRequired />
         <Textarea label="Description" placeholder="A short description of the project" onValueChange={(value) => setForm({ ...form, description: value })} value={form.description} />
-        <Input label="GitHub URL" placeholder="https://github.com/username/repo" onValueChange={(value) => setForm({ ...form, gitHubUrl: value })} value={form.gitHubUrl} isRequired />
-        <Input label="Main branch" placeholder="main" onValueChange={(value) => setForm({ ...form, mainBranch: value })} value={form.mainBranch} isRequired />
-        <Input label="Build command" placeholder="npm run build" onValueChange={(value) => setForm({ ...form, buildCommand: value })} value={form.buildCommand} isRequired />
-        <Input label="Start command" placeholder="npm run start" onValueChange={(value) => setForm({ ...form, startCommand: value })} value={form.startCommand} isRequired />
 
-        <div>
-          <h2>Environment variables</h2>
-          <Button onClick={() => setForm({ ...form, envVars: [...form.envVars, { key: "", value: "" }] })}>Add environment variable</Button>
-        </div>
-        <div>
-          {form.envVars.map((envVar, index) => (
-            <div key={index}>
-              <Input label="Key" placeholder="API_KEY" onValueChange={(value) => setForm({ ...form, envVars: form.envVars.map((v, i) => (i === index ? { ...v, key: value } : v)) })} value={envVar.key} />
-              <Input label="Value" placeholder="your-api-key" onValueChange={(value) => setForm({ ...form, envVars: form.envVars.map((v, i) => (i === index ? { ...v, value: value } : v)) })} value={envVar.value} />
-            </div>
-          ))}
-        </div>
-
-        <Button type="submit">Create project</Button>
+        <Button type="submit">Create Project</Button>
       </form>
     </main >
   );

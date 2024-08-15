@@ -15,3 +15,13 @@ export async function GET(request: NextRequest, { params }: { params: { projectI
 
     return NextResponse.json({ code: "OK", message: "Project fetched", data: project });
 }
+
+export async function DELETE(request: NextRequest, { params }: { params: { projectId: string } }) {
+    const project = await prisma.project.delete({
+        where: {
+            id: parseInt(params.projectId),
+        },
+    });
+
+    return NextResponse.json({ code: "OK", message: "Project deleted", data: project });
+}

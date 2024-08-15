@@ -4,6 +4,7 @@ import { NextLink } from "@/contexts/GlobalProviders";
 import { Button, Card, CardBody, Input, Link, Spacer } from "@nextui-org/react";
 import { Tabs, Tab } from "@nextui-org/tabs";
 import { Service } from "@prisma/client";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 interface Project {
@@ -17,6 +18,7 @@ interface Project {
 
 export default function IndividualProjectPage({ params }: { params: { projectId: string } }) {
   const [project, setProject] = useState<Project>();
+  const router = useRouter();
 
   const fetchProject = async () => {
     const response = await fetch(`/api/projects/${params.projectId}`);
@@ -27,6 +29,22 @@ export default function IndividualProjectPage({ params }: { params: { projectId:
       servicesCount: resBody.data.Services.length,
     })
   };
+
+  const handleDelete = async () => {
+    const resBody = await fetch(`/api/projects/${params.projectId}`, {
+      method: "DELETE",
+    }).then((res) => {
+      return res.json();
+    });
+
+    if (resBody.code === "OK") {
+      alert("Project deleted successfully!");
+    } else {
+      alert("Failed to delete project");
+    }
+
+    router.push("/projects");
+  }
 
   useEffect(() => {
     fetchProject();
@@ -46,6 +64,14 @@ export default function IndividualProjectPage({ params }: { params: { projectId:
 
         <Button as={NextLink} href={`/projects/${params.projectId}/services`}>
           Go to Services
+        </Button>
+
+        {/* DELETE BUTTON */}
+        <Button onClick={handleDelete} color="danger" variant="bordered"
+          startContent={<span className="material-symbols-outlined">delete</span>}
+          className="absolute bottom-4 right-4"
+        >
+          Delete Project
         </Button>
       </section>
     </main >

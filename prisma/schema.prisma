@@ -14,9 +14,10 @@ datasource db {
 }
 
 model Project {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  name      String
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  name        String
+  description String?
 
   Services Service[]
 }
@@ -34,7 +35,7 @@ model Service {
   projectId    Int
 
   EnvVars EnvVar[]
-  Project Project? @relation(fields: [projectId], references: [id])
+  Project Project? @relation(fields: [projectId], references: [id], onDelete: Cascade)
 }
 
 model EnvVar {
@@ -44,5 +45,5 @@ model EnvVar {
   value     String
   serviceId Int
 
-  Service Service @relation(fields: [serviceId], references: [id])
+  Service Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 }

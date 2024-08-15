@@ -92,7 +92,7 @@ export default function IndividualservicePage({ params }: { params: { serviceId:
         <Tabs aria-label="Options">
           <Tab key="environment" title="Environment" className="p-4">
             {service &&
-              <EnvSection envVars={service.EnvVars} reloadCallback={fetchService} />
+              <EnvSection serviceId={service.id} envVars={service.EnvVars} reloadCallback={fetchService} />
             }
           </Tab>
           <Tab key="music" title="Music">
@@ -115,7 +115,7 @@ export default function IndividualservicePage({ params }: { params: { serviceId:
   )
 }
 
-function EnvSection({ envVars: initialEnvVars, reloadCallback }: { envVars: Service["EnvVars"], reloadCallback: () => void }) {
+function EnvSection({ envVars: initialEnvVars, reloadCallback, serviceId }: { envVars: Service["EnvVars"], reloadCallback: () => void, serviceId: number }) {
   const [envVars, setEnvVars] = useState<{ id: number, key: string, value: string }[]>(initialEnvVars);
 
   const shouldUpdate = useMemo(() => (
@@ -130,7 +130,7 @@ function EnvSection({ envVars: initialEnvVars, reloadCallback }: { envVars: Serv
     const reqBody = { envVars: envVars.filter((e) => e.key && e.value) };
 
     // Update env vars
-    const resBody = await fetch(`/api/services/${initialEnvVars[0].serviceId}/env`, {
+    const resBody = await fetch(`/api/services/${serviceId}/env`, {
       method: "PUT",
       body: JSON.stringify(reqBody),
       headers: {

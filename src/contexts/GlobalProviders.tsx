@@ -5,10 +5,14 @@ import { NextUIProvider } from '@nextui-org/react';
 import { useRouter } from 'next/navigation'
 
 export function GlobalProviders({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
 
-  // TODO: Setup Routing: navigate={router.push}
+  const handleNavigate = (path: string) => {
+    router.push(path)
+  }
+
   return (
-    <NextUIProvider>
+    <NextUIProvider navigate={handleNavigate}>
       {children}
     </NextUIProvider>
   )

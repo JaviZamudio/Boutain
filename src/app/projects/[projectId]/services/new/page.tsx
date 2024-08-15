@@ -13,6 +13,7 @@ export default function NewServicePage({ params }: { params: { projectId: string
     mainBranch: "",
     buildCommand: "",
     startCommand: "",
+    internalPort: "",
     envVars: [] as { key: string; value: string }[],
   });
 
@@ -45,6 +46,7 @@ export default function NewServicePage({ params }: { params: { projectId: string
       mainBranch: "",
       buildCommand: "",
       startCommand: "",
+      internalPort: "",
       envVars: [],
     });
   };
@@ -62,6 +64,7 @@ export default function NewServicePage({ params }: { params: { projectId: string
         <Input label="Main branch" placeholder="main" onValueChange={(value) => setForm({ ...form, mainBranch: value })} value={form.mainBranch} isRequired />
         <Input label="Build command" placeholder="npm run build" onValueChange={(value) => setForm({ ...form, buildCommand: value })} value={form.buildCommand} isRequired />
         <Input label="Start command" placeholder="npm run start" onValueChange={(value) => setForm({ ...form, startCommand: value })} value={form.startCommand} isRequired />
+        <Input label="Internal port" placeholder="3000" onValueChange={(value) => setForm({ ...form, internalPort: value })} value={form.internalPort} isRequired />
 
         <div>
           <h2>Environment variables</h2>

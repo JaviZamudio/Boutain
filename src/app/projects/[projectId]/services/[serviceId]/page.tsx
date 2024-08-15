@@ -2,9 +2,10 @@
 
 import { Button, Card, CardBody, Input, Link, Spacer } from "@nextui-org/react";
 import { Tabs, Tab } from "@nextui-org/tabs";
+import { Service as PrismaService } from "@prisma/client";
 import { useEffect, useMemo, useState } from "react";
 
-interface Service {
+interface Service extends PrismaService {
   id: number;
   createdAt: Date;
   name: string;
@@ -63,8 +64,12 @@ export default function IndividualservicePage({ params }: { params: { serviceId:
           {service?.description || "No description provided"}
         </div>
         <div className="flex gap-2">
-          <span className="font-bold">Port:</span>
+          <span className="font-bold">Machine Port:</span>
           {service?.port}
+        </div>
+        <div className="flex gap-2">
+          <span className="font-bold">Internal Port:</span>
+          {service?.internalPort}
         </div>
         <div className="flex gap-2">
           <span className="font-bold">GitHub URL:</span>
@@ -95,7 +100,7 @@ export default function IndividualservicePage({ params }: { params: { serviceId:
               <EnvSection serviceId={service.id} envVars={service.EnvVars} reloadCallback={fetchService} />
             }
           </Tab>
-          <Tab key="music" title="Music">
+          <Tab key="settings" title="Settings">
             <Card>
               <CardBody>
                 Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
@@ -213,7 +218,7 @@ function EnvSection({ envVars: initialEnvVars, reloadCallback, serviceId }: { en
   );
 }
 
-export function PasswordInput({ label, value, onValueChange }: { label: string, value: string, onValueChange: (v: string) => void }) {
+function PasswordInput({ label, value, onValueChange }: { label: string, value: string, onValueChange: (v: string) => void }) {
   const [showPassword, setShowPassword] = useState(false);
 
   return (

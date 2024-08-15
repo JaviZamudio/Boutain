@@ -28,6 +28,7 @@ model Service {
   name         String
   description  String?
   port         Int
+  internalPort Int      @default(3000)
   gitHubUrl    String
   mainBranch   String
   buildCommand String

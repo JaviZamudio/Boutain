@@ -1,6 +1,6 @@
+import { deployService } from "@/services/services";
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-import { deployService } from "..";
 
 const prisma = new PrismaClient();
 

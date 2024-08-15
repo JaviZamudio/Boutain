@@ -22,6 +22,10 @@ export const deployService = async (serviceId: number) => {
         // Create Dockerfile in /docker with the Service's configuration
         const dockerfile = `
 # Use the official Node.js 18 image
+# Node.js: node:18
+# Python: python:3.9
+# PostgreSQL: postgres:13
+# Object Storage: minio/minio
 FROM node:18
 
 # Set the working directory in the container
@@ -34,9 +38,10 @@ RUN git clone -b ${service.mainBranch} ${service.gitHubUrl} .
 RUN ${service.buildCommand}
 
 # Expose the port the app runs on
-EXPOSE 3000
+EXPOSE ${service.internalPort}
 
 # Set environment variables
+PORT=${service.internalPort}
 ${service.EnvVars.map((envVar) => `ENV ${envVar.key}=${envVar.value}`).join('\n')}
 
 # Run the start command
@@ -51,14 +56,17 @@ CMD ${service.startCommand}
         fs.writeFileSync(`./docker/${service.id}-Dockerfile`, dockerfile);
 
         // Kill existing container if it exists (to free up the port)
-        execSync(`docker kill ${service.id}`);
-
+        try {
+            execSync(`docker kill s${service.id}`);
+        } catch (error) {
+            // Ignore error if container doesn't exist
+        }
 
         // Build Docker image
-        execSync(`docker build -t ${service.id} -f ./docker/${service.id}-Dockerfile .`);
+        execSync(`docker build -t i${service.id} -f ./docker/${service.id}-Dockerfile .`);
 
         // Run Docker container
-        execSync(`docker run -d -p ${service.port}:3000 --name ${service.id} ${service.id}`);
+        execSync(`docker run -d -p ${service.port}:${service.internalPort} --name s${service.id} i${service.id}`);
 
     } catch (error) {
         console.error(error);

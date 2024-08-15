@@ -4,11 +4,21 @@
 import { NextUIProvider } from '@nextui-org/react';
 import { useRouter } from 'next/navigation'
 
-export function GlobalProviders({ children }: { children: React.ReactNode }) {
+import Link from 'next/link';
+import Image from 'next/image';
 
-  // TODO: Setup Routing: navigate={router.push}
+export { Link as NextLink };
+export { Image as NextImage };
+
+export function GlobalProviders({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+
+  const handleNavigate = (path: string) => {
+    router.push(path)
+  }
+
   return (
-    <NextUIProvider>
+    <NextUIProvider navigate={handleNavigate}>
       {children}
     </NextUIProvider>
   )

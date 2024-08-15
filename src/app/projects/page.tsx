@@ -8,9 +8,8 @@ interface Project {
   id: number;
   name: string;
   description?: string;
-  port: number;
-  gitHubUrl: string;
-  mainBranch: string;
+  _count: { Services: number };
+  servicesCount: number;
 }
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>();
@@ -18,7 +17,10 @@ export default function ProjectsPage() {
   const fetchProjects = async () => {
     const response = await fetch("/api/projects");
     const resBody = await response.json();
-    setProjects(resBody.data);
+    setProjects(resBody.data.map((project: Project) => ({
+      ...project,
+      servicesCount: project._count.Services
+    })))
   };
 
   useEffect(() => {
@@ -39,9 +41,7 @@ export default function ProjectsPage() {
       <Table aria-label="Example static collection table">
         <TableHeader>
           <TableColumn>Name</TableColumn>
-          <TableColumn>Github URL</TableColumn>
-          <TableColumn>Main Branch</TableColumn>
-          <TableColumn>Port</TableColumn>
+          <TableColumn>N. Services</TableColumn>
           <TableColumn>Actions</TableColumn>
         </TableHeader>
         <TableBody isLoading={!projects} loadingContent={<Spinner label="Loading projects..." />} emptyContent={"No projects found"}>
@@ -54,12 +54,8 @@ export default function ProjectsPage() {
                   </Link>
                 </TableCell>
                 <TableCell>
-                  <Link href={project.gitHubUrl} isExternal showAnchorIcon>
-                    {project.gitHubUrl}
-                  </Link>
+                  {project.servicesCount}
                 </TableCell>
-                <TableCell>{project.mainBranch}</TableCell>
-                <TableCell>{project.port}</TableCell>
                 <TableCell>
                   <Button endContent={<span className="material-symbols-outlined">chevron_right</span>} as={Link} href={`/projects/${project.id}`}>
                     View

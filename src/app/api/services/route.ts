@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { deployService } from ".";
 
 const prisma = new PrismaClient();
 
@@ -49,18 +50,21 @@ export async function POST(request: NextRequest) {
         })),
     });
 
+    const deployResult = deployService(createServiceResult.id);
+
+    if (!deployResult) {
+        return NextResponse.json({ code: "ERROR", message: "Failed to deploy Service" });
+    }
 
     return NextResponse.json({ code: "OK", message: "Service created", data: createServiceResult });
 }
 
 export async function GET() {
-    const projects = await prisma.project.findMany({
+    const services = await prisma.service.findMany({
         include: {
-            _count: {
-                select: { Services: true },
-            }
-        }
+            EnvVars: true,
+        },
     });
 
-    return NextResponse.json({ code: "OK", message: "Projects fetched", data: projects });
+    return NextResponse.json({ code: "OK", message: "Services fetched", data: services });
 }

@@ -15,7 +15,18 @@ export async function GET(request: NextRequest, { params }: { params: { serviceI
         },
     });
 
-    return NextResponse.json({ code: "OK", message: "service fetched", data: service });
+    const currentHost = request.headers.get("host")?.split(":")[0];
+
+    if (!service) {
+        return NextResponse.json({ code: "NOT_FOUND", message: "No Service found with that ID" });
+    }
+
+    const data = {
+        ...service,
+        url: `http://${currentHost}:${service.port}`,
+    }
+
+    return NextResponse.json({ code: "OK", message: "service fetched", data: data });
 }
 
 // POST: Re-Deploy service
@@ -27,4 +38,25 @@ export async function POST(request: NextRequest, { params }: { params: { service
     }
 
     return NextResponse.json({ code: "OK", message: "service re-deployed" });
+}
+
+// PUT: Update service
+export async function PUT(request: NextRequest, { params }: { params: { serviceId: string } }) {
+    const { name, description, gitHubUrl, mainBranch, buildCommand, startCommand } = await request.json();
+
+    const service = await prisma.service.update({
+        where: {
+            id: parseInt(params.serviceId),
+        },
+        data: {
+            name,
+            description: description || null,
+            gitHubUrl,
+            mainBranch,
+            buildCommand,
+            startCommand,
+        },
+    });
+
+    return NextResponse.json({ code: "OK", message: "Service updated", data: service });
 }

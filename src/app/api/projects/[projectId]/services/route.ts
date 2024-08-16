@@ -11,10 +11,11 @@ interface PostServicetBody {
     mainBranch: string;
     buildCommand: string;
     startCommand: string;
+    internalPort: string;
     envVars: { key: string; value: string }[];
 }
 export async function POST(request: NextRequest, { params }: { params: { projectId: string } }) {
-    const { name, description, gitHubUrl, mainBranch, buildCommand, startCommand, envVars }: PostServicetBody = await request.json();
+    const { name, description, gitHubUrl, mainBranch, buildCommand, startCommand, envVars, internalPort }: PostServicetBody = await request.json();
 
     // Set the port to the next available port
     let port = 0;
@@ -37,6 +38,7 @@ export async function POST(request: NextRequest, { params }: { params: { project
             buildCommand,
             startCommand,
             port,
+            internalPort: +internalPort,
             projectId: parseInt(params.projectId),
         },
     });

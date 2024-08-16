@@ -3,6 +3,7 @@
 import { Button, Card, CardBody, Input, Link, Spacer } from "@nextui-org/react";
 import { Tabs, Tab } from "@nextui-org/tabs";
 import { Service as PrismaService } from "@prisma/client";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 interface Service extends PrismaService {
@@ -15,6 +16,7 @@ interface Service extends PrismaService {
   mainBranch: string;
   buildCommand: string;
   startCommand: string;
+  url: string;
   EnvVars: {
     id: number;
     key: string;
@@ -64,12 +66,15 @@ export default function IndividualservicePage({ params }: { params: { serviceId:
           {service?.description || "No description provided"}
         </div>
         <div className="flex gap-2">
-          <span className="font-bold">Machine Port:</span>
-          {service?.port}
-        </div>
-        <div className="flex gap-2">
-          <span className="font-bold">Internal Port:</span>
-          {service?.internalPort}
+          <span className="font-bold">URL:</span>
+          <Link
+            href={service?.url}
+            isExternal
+            showAnchorIcon
+            underline="hover"
+          >
+            {service?.url}
+          </Link>
         </div>
         <div className="flex gap-2">
           <span className="font-bold">GitHub URL:</span>
@@ -93,7 +98,7 @@ export default function IndividualservicePage({ params }: { params: { serviceId:
       </section>
 
 
-      <section>
+      <section className="mt-4">
         <Tabs aria-label="Options">
           <Tab key="environment" title="Environment" className="p-4">
             {service &&
@@ -101,11 +106,9 @@ export default function IndividualservicePage({ params }: { params: { serviceId:
             }
           </Tab>
           <Tab key="settings" title="Settings">
-            <Card>
-              <CardBody>
-                Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-              </CardBody>
-            </Card>
+            {service &&
+              <SettingsSection service={service} />
+            }
           </Tab>
           <Tab key="videos" title="Videos">
             <Card>
@@ -216,6 +219,79 @@ function EnvSection({ envVars: initialEnvVars, reloadCallback, serviceId }: { en
       </form >
     </div >
   );
+}
+
+function SettingsSection({ service }: { service: Service }) {
+  const router = useRouter();
+  const [isEditing, setIsEditing] = useState(false);
+  const initialForm = useMemo(() => ({
+    name: service.name,
+    description: service.description || "",
+    gitHubUrl: service.gitHubUrl,
+    mainBranch: service.mainBranch,
+    buildCommand: service.buildCommand,
+    startCommand: service.startCommand,
+  }), [service]);
+  const [form, setForm] = useState(initialForm);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!isEditing) return;
+
+    // Update service
+    const resBody = await fetch(`/api/projects/${service.projectId}/services/${service.id}`, {
+      method: "PUT",
+      body: JSON.stringify(form),
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }).then((res) => res.json());
+
+    if (resBody.code === "OK") {
+      alert("Service updated successfully!");
+      router.refresh();
+      setIsEditing(false);
+    } else {
+      alert("Failed to update Service");
+    }
+  }
+
+  useEffect(() => {
+    setForm(initialForm);
+  }, [service]);
+
+  useEffect(() => {
+    setIsEditing(JSON.stringify(form) !== JSON.stringify(initialForm));
+  }, [form, initialForm]);
+
+  return (
+    <div>
+      <h3 className="text-xl font-bold">Settings</h3>
+      <form className="space-y-4 mt-4 max-w-3xl" onSubmit={handleSubmit}>
+        <Input label="Name" value={form.name} onValueChange={(v) => setForm((prev) => ({ ...prev, name: v }))} />
+        <Input label="Description" value={form.description} onValueChange={(v) => setForm((prev) => ({ ...prev, description: v }))} />
+        <Input label="GitHub URL" value={form.gitHubUrl} onValueChange={(v) => setForm((prev) => ({ ...prev, gitHubUrl: v }))} />
+        <Input label="Main Branch" value={form.mainBranch} onValueChange={(v) => setForm((prev) => ({ ...prev, mainBranch: v }))} />
+        <Input label="Build Command" value={form.buildCommand} onValueChange={(v) => setForm((prev) => ({ ...prev, buildCommand: v }))} />
+        <Input label="Start Command" value={form.startCommand} onValueChange={(v) => setForm((prev) => ({ ...prev, startCommand: v }))} />
+
+        <div className="flex gap-2 mt-4">
+          <Button
+            isDisabled={!isEditing}
+            variant="flat"
+            onClick={() => {
+              setIsEditing(false);
+              setForm(initialForm);
+            }}>
+            Cancel
+          </Button>
+          <Button type="submit" color="primary" isDisabled={!isEditing}>
+            Update
+          </Button>
+        </div>
+      </form>
+    </div>
+  )
 }
 
 function PasswordInput({ label, value, onValueChange }: { label: string, value: string, onValueChange: (v: string) => void }) {

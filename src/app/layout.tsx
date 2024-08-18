@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { GlobalProviders } from "@/contexts/GlobalProviders";
 import Header from "@/components/Header";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 export const metadata: Metadata = {
   title: "Boutain",
@@ -18,8 +19,10 @@ export default function RootLayout({
     <html lang="en" className="light">
       <body>
         <GlobalProviders>
-          <Header />
-          {children}
+          <AuthProvider>
+            <Header />
+            {children}
+          </AuthProvider>
         </GlobalProviders>
       </body>
     </html>

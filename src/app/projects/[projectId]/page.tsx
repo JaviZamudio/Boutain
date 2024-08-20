@@ -51,7 +51,7 @@ export default function IndividualProjectPage({ params }: { params: { projectId:
   }, []);
 
   return (
-    <main className="p-4">
+    <>
       <h1 className="text-4xl font-bold text-center">Project: {project?.name}</h1>
 
       {/* General Info */}
@@ -74,6 +74,6 @@ export default function IndividualProjectPage({ params }: { params: { projectId:
           Delete Project
         </Button>
       </section>
-    </main >
+    </>
   )
 }

@@ -18,7 +18,7 @@ export function GlobalProviders({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <NextUIProvider navigate={handleNavigate}>
+    <NextUIProvider navigate={handleNavigate} className='h-screen flex flex-col grow'>
       {children}
     </NextUIProvider>
   )

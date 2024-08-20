@@ -1,6 +1,6 @@
 "use client"
 
-import { Button, Card, CardBody, Input, Link, Spacer } from "@nextui-org/react";
+import { Button, Card, CardBody, Input, Link, Spacer, Textarea } from "@nextui-org/react";
 import { Tabs, Tab } from "@nextui-org/tabs";
 import { Service as PrismaService } from "@prisma/client";
 import { useRouter } from "next/navigation";
@@ -55,7 +55,7 @@ export default function IndividualservicePage({ params }: { params: { serviceId:
   }, []);
 
   return (
-    <main className="p-4">
+    <>
       <h1 className="text-4xl font-bold text-center">service: {service?.name}</h1>
 
       {/* General Info */}
@@ -110,16 +110,9 @@ export default function IndividualservicePage({ params }: { params: { serviceId:
               <SettingsSection service={service} />
             }
           </Tab>
-          <Tab key="videos" title="Videos">
-            <Card>
-              <CardBody>
-                Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-              </CardBody>
-            </Card>
-          </Tab>
         </Tabs>
       </section>
-    </main >
+    </>
   )
 }
 
@@ -269,7 +262,7 @@ function SettingsSection({ service }: { service: Service }) {
       <h3 className="text-xl font-bold">Settings</h3>
       <form className="space-y-4 mt-4 max-w-3xl" onSubmit={handleSubmit}>
         <Input label="Name" value={form.name} onValueChange={(v) => setForm((prev) => ({ ...prev, name: v }))} />
-        <Input label="Description" value={form.description} onValueChange={(v) => setForm((prev) => ({ ...prev, description: v }))} />
+        <Textarea label="Description" value={form.description} onValueChange={(v) => setForm((prev) => ({ ...prev, description: v }))} />
         <Input label="GitHub URL" value={form.gitHubUrl} onValueChange={(v) => setForm((prev) => ({ ...prev, gitHubUrl: v }))} />
         <Input label="Main Branch" value={form.mainBranch} onValueChange={(v) => setForm((prev) => ({ ...prev, mainBranch: v }))} />
         <Input label="Build Command" value={form.buildCommand} onValueChange={(v) => setForm((prev) => ({ ...prev, buildCommand: v }))} />

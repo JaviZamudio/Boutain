@@ -41,8 +41,6 @@ export default function ServicesPage({ params }: { params: { projectId: string }
       <Table aria-label="Example static collection table">
         <TableHeader>
           <TableColumn>Name</TableColumn>
-          <TableColumn>Github URL</TableColumn>
-          <TableColumn>Main Branch</TableColumn>
           <TableColumn>Port</TableColumn>
           <TableColumn>Actions</TableColumn>
         </TableHeader>
@@ -55,12 +53,6 @@ export default function ServicesPage({ params }: { params: { projectId: string }
                     {service.name}
                   </Link>
                 </TableCell>
-                <TableCell>
-                  <Link href={service.gitHubUrl} isExternal showAnchorIcon>
-                    {service.gitHubUrl}
-                  </Link>
-                </TableCell>
-                <TableCell>{service.mainBranch}</TableCell>
                 <TableCell>{service.port}</TableCell>
                 <TableCell>
                   <Button endContent={<span className="material-symbols-outlined">chevron_right</span>} as={Link} href={`/projects/${params.projectId}/services/${service.id}`}>

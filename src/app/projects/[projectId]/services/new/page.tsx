@@ -1,6 +1,6 @@
 "use client"
 
-import { PasswordInput } from "@/app/services/[serviceId]/page";
+import { PasswordInput } from "@/components/PasswordInput";
 import { getRuntimesByType, getServiceRuntime, ServiceRuntimeId } from "@/types";
 import { Button, Divider, Input, Link, Select, SelectItem, Textarea } from "@nextui-org/react";
 import { useRouter } from "next/navigation";

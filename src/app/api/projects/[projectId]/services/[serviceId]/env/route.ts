@@ -6,7 +6,6 @@ const prisma = new PrismaClient();
 export async function GET(request: NextRequest, { params }: { params: { serviceId: string } }) {
     const env = await prisma.envVar.findMany({
         where: {
-            // serviceId: parseInt(params.serviceId),
             WebService: {
                 serviceId: parseInt(params.serviceId),
             }

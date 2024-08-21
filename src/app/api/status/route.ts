@@ -2,6 +2,8 @@ import { execSync } from "child_process";
 import { NextRequest, NextResponse } from "next/server";
 
 export function GET(req: NextRequest) {
+    req.headers.get("Authorization")
+
     const status = {
         docker: true
     }

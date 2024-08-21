@@ -123,7 +123,7 @@ function EnvSection({ envVars: initialEnvVars, reloadCallback, serviceId }: { en
     const reqBody = { envVars: envVars.filter((e) => e.key && e.value) };
 
     // Update env vars
-    const resBody = await fetch(`/api/services/${serviceId}/env`, {
+    const resBody = await fetch(`/api/projects/${serviceId}/services/${serviceId}/env`, {
       method: "PUT",
       body: JSON.stringify(reqBody),
       headers: {

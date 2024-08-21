@@ -10,8 +10,17 @@ export async function GET(request: NextRequest, { params }: { params: { serviceI
             id: parseInt(params.serviceId),
         },
         include: {
-            EnvVars: true,
-            Project: true
+            Project: true,
+            Database: {
+                include: {
+
+                }
+            },
+            WebService: {
+                include: {
+                    EnvVars: true,
+                }
+            }
         },
     });
 
@@ -51,10 +60,6 @@ export async function PUT(request: NextRequest, { params }: { params: { serviceI
         data: {
             name,
             description: description || null,
-            gitHubUrl,
-            mainBranch,
-            buildCommand,
-            startCommand,
         },
     });
 

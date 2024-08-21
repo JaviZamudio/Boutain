@@ -1,17 +1,12 @@
 "use client";
 
-import { Table, TableBody, TableCell, TableHeader, TableRow, TableColumn, Button, Spinner, Link } from "@nextui-org/react";
-import { Project } from "@prisma/client";
+import { getServiceRuntime, getServiceType, ServiceRuntimeId, ServiceTypeId, serviceTypes } from "@/types";
+import { Table, TableBody, TableCell, TableHeader, TableRow, TableColumn, Button, Spinner, Link, Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from "@nextui-org/react";
+import { Project as PrismaProject, Service as PrismaService } from "@prisma/client";
 import { useEffect, useState } from "react";
 
-interface Service {
-  id: number;
-  name: string;
-  description?: string;
-  port: number;
-  gitHubUrl: string;
-  mainBranch: string;
-  Project: Project
+interface Service extends PrismaService {
+  Project: PrismaProject
 }
 
 export default function ServicesPage({ params }: { params: { projectId: string } }) {
@@ -28,19 +23,37 @@ export default function ServicesPage({ params }: { params: { projectId: string }
   }, []);
 
   return (
-    <main>
+    <>
       <h1 className="text-4xl font-bold text-center">Services</h1>
 
-      <Button
-        as={Link} href={`/projects/${params.projectId}/services/new`}
-        startContent={<span className="material-symbols-outlined">add</span>}
-      >
-        New service
-      </Button>
+      <Dropdown>
+        <DropdownTrigger className="my-4">
+          <Button
+            className="self-end"
+            endContent={<span className="material-symbols-outlined">add</span>}
+          >
+            New service
+          </Button>
+        </DropdownTrigger>
+        <DropdownMenu>
+          {serviceTypes.map((serviceType) => (
+            <DropdownItem
+              as={Link}
+              href={`/projects/${params.projectId}/services/new/${serviceType.routePrefix}`}
+              startContent={<span className="material-symbols-outlined">{serviceType.icon}</span>}
+              key={serviceType.id}
+            >
+              {serviceType.name}
+            </DropdownItem>
+          ))}
+        </DropdownMenu>
+      </Dropdown>
 
       <Table aria-label="Example static collection table">
         <TableHeader>
           <TableColumn>Name</TableColumn>
+          <TableColumn>Type</TableColumn>
+          <TableColumn>Runtime</TableColumn>
           <TableColumn>Port</TableColumn>
           <TableColumn>Actions</TableColumn>
         </TableHeader>
@@ -49,20 +62,31 @@ export default function ServicesPage({ params }: { params: { projectId: string }
             services.map((service) => (
               <TableRow key={service.id}>
                 <TableCell>
+                  {/* <Link href={`/projects/${params.projectId}/services/${getServiceType(service.serviceType as ServiceTypeId)?.routePrefix}/${service.id}`}> */}
                   <Link href={`/projects/${params.projectId}/services/${service.id}`}>
                     {service.name}
                   </Link>
                 </TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <span className="material-symbols-outlined">{getServiceType(service.serviceType as ServiceTypeId)?.icon}</span>
+                    {getServiceType(service.serviceType as ServiceTypeId)?.name}
+                  </div>
+                </TableCell>
+                <TableCell>
+                  {getServiceRuntime(service.serviceRuntime as ServiceRuntimeId)?.name}
+                </TableCell>
                 <TableCell>{service.port}</TableCell>
                 <TableCell>
+                  {/* <Button endContent={<span className="material-symbols-outlined">chevron_right</span>} as={Link} href={`/projects/${params.projectId}/services/${getServiceType(service.serviceType as ServiceTypeId)?.routePrefix}/${service.id}`}> */}
                   <Button endContent={<span className="material-symbols-outlined">chevron_right</span>} as={Link} href={`/projects/${params.projectId}/services/${service.id}`}>
                     View
                   </Button>
                 </TableCell>
               </TableRow>
             ))}
-        </TableBody>
-      </Table>
-    </main >
+        </TableBody >
+      </Table >
+    </ >
   );
 }

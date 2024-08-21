@@ -6,7 +6,10 @@ const prisma = new PrismaClient();
 export async function GET(request: NextRequest, { params }: { params: { serviceId: string } }) {
     const env = await prisma.envVar.findMany({
         where: {
-            serviceId: parseInt(params.serviceId),
+            // serviceId: parseInt(params.serviceId),
+            WebService: {
+                serviceId: parseInt(params.serviceId),
+            }
         },
     });
 
@@ -14,22 +17,30 @@ export async function GET(request: NextRequest, { params }: { params: { serviceI
 }
 
 export async function PUT(request: NextRequest, { params }: { params: { serviceId: string } }) {
-    const { envVars } = await request.json();
+    const { envVars } = await request.json() as { envVars: { key: string, value: string }[] };
 
     const [deletedEnvVars, newEnvVars] = await prisma.$transaction([
         // Delete all env vars for this service
         prisma.envVar.deleteMany({
             where: {
-                serviceId: parseInt(params.serviceId),
+                WebService: {
+                    serviceId: parseInt(params.serviceId),
+                }
             },
         }),
         // Create new env vars
-        prisma.envVar.createMany({
-            data: envVars.map((envVar: any) => ({
+        prisma.webService.update({
+            where: {
                 serviceId: parseInt(params.serviceId),
-                key: envVar.key,
-                value: envVar.value,
-            })),
+            },
+            data: {
+                EnvVars: {
+                    create: envVars.map((envVar: any) => ({
+                        key: envVar.key,
+                        value: envVar.value,
+                    })),
+                },
+            },
         }),
     ]);
 

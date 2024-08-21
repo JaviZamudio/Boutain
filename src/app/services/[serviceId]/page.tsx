@@ -223,6 +223,8 @@ export function PasswordInput({ label, value, onValueChange }: { label: string, 
           {showPassword ? "visibility_off" : "visibility"}
         </span>
       </Button>
-    } />
+    }
+      autoComplete="off"
+    />
   )
 }

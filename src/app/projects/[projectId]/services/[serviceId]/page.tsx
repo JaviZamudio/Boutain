@@ -2,7 +2,7 @@
 
 import { Button, Card, CardBody, Input, Link, Spacer, Textarea } from "@nextui-org/react";
 import { Tabs, Tab } from "@nextui-org/tabs";
-import { Service as PrismaService } from "@prisma/client";
+import { Database, EnvVar, Service as PrismaService, WebService } from "@prisma/client";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
@@ -12,17 +12,9 @@ interface Service extends PrismaService {
   name: string;
   description: string | null;
   port: number;
-  gitHubUrl: string;
-  mainBranch: string;
-  buildCommand: string;
-  startCommand: string;
   url: string;
-  EnvVars: {
-    id: number;
-    key: string;
-    value: string;
-    serviceId: number;
-  }[];
+  WebService: WebService & { EnvVars: EnvVar[] };
+  Database: Database;
 }
 
 export default function IndividualservicePage({ params }: { params: { serviceId: string, projectId: string } }) {
@@ -78,13 +70,13 @@ export default function IndividualservicePage({ params }: { params: { serviceId:
         </div>
         <div className="flex gap-2">
           <span className="font-bold">GitHub URL:</span>
-          <Link href={service?.gitHubUrl} isExternal showAnchorIcon>
-            {service?.gitHubUrl}
+          <Link href={service?.WebService.gitHubUrl} isExternal showAnchorIcon>
+            {service?.WebService.gitHubUrl}
           </Link>
         </div>
         <div className="flex gap-2">
           <span className="font-bold">Main Branch:</span>
-          {service?.mainBranch}
+          {service?.WebService.mainBranch}
         </div>
 
         <Button
@@ -102,7 +94,7 @@ export default function IndividualservicePage({ params }: { params: { serviceId:
         <Tabs aria-label="Options">
           <Tab key="environment" title="Environment" className="p-4">
             {service &&
-              <EnvSection serviceId={service.id} envVars={service.EnvVars} reloadCallback={fetchService} />
+              <EnvSection serviceId={service.id} envVars={service.WebService.EnvVars} reloadCallback={fetchService} />
             }
           </Tab>
           <Tab key="settings" title="Settings">
@@ -116,7 +108,7 @@ export default function IndividualservicePage({ params }: { params: { serviceId:
   )
 }
 
-function EnvSection({ envVars: initialEnvVars, reloadCallback, serviceId }: { envVars: Service["EnvVars"], reloadCallback: () => void, serviceId: number }) {
+function EnvSection({ envVars: initialEnvVars, reloadCallback, serviceId }: { envVars: EnvVar[], reloadCallback: () => void, serviceId: number }) {
   const [envVars, setEnvVars] = useState<{ id: number, key: string, value: string }[]>(initialEnvVars);
 
   const shouldUpdate = useMemo(() => (
@@ -220,10 +212,10 @@ function SettingsSection({ service }: { service: Service }) {
   const initialForm = useMemo(() => ({
     name: service.name,
     description: service.description || "",
-    gitHubUrl: service.gitHubUrl,
-    mainBranch: service.mainBranch,
-    buildCommand: service.buildCommand,
-    startCommand: service.startCommand,
+    gitHubUrl: service.WebService.gitHubUrl,
+    mainBranch: service.WebService.mainBranch,
+    buildCommand: service.WebService.buildCommand,
+    startCommand: service.WebService.startCommand,
   }), [service]);
   const [form, setForm] = useState(initialForm);
 

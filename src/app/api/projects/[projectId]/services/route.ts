@@ -1,17 +1,28 @@
 import { deployService } from "@/services/services";
-import { ServiceTypeId, serviceRuntimes } from "@/types";
-import { PrismaClient } from "@prisma/client";
+import { ServiceRuntimeId, ServiceTypeId, getServiceRuntime, serviceRuntimes } from "@/types";
+import { Database, EnvVar, PrismaClient, WebService } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
 
-interface PostServicetBody {
+interface WebServiceDetails {
+    buildCommand: string;
+    startCommand: string;
+    mainBranch: string;
+    gitHubUrl: string;
+    envVars: { key: string; value: string }[];
+}
+
+export interface PostServicetBody {
     name: string;
     description: string;
     serviceType: ServiceTypeId;
+    runtimeId: ServiceRuntimeId;
+    dockerVersion: string;
+    serviceDetails: WebServiceDetails | Database;
 }
 export async function POST(request: NextRequest, { params }: { params: { projectId: string } }) {
-    const { name, description, serviceType }: PostServicetBody = await request.json();
+    const { name, description, serviceType, runtimeId, dockerVersion, serviceDetails } = await request.json() as PostServicetBody;
 
     // Set the port to the next available port
     let port = 0;
@@ -25,6 +36,7 @@ export async function POST(request: NextRequest, { params }: { params: { project
     });
     port = lastPort ? lastPort.port + 1 : 3000;
 
+    // Create the service
     const createServiceResult = await prisma.service.create({
         data: {
             name,
@@ -32,10 +44,9 @@ export async function POST(request: NextRequest, { params }: { params: { project
             port,
             projectId: parseInt(params.projectId),
             serviceType: serviceType,
-            serviceRuntime: "nodejs",
-            dockerImage: "nodejs",
-            dockerVersion: "18",
-            // dockerConfig: JSON.stringify({ dockerImage: "nodejs", dockerVersion: "18" }),
+            serviceRuntime: runtimeId,
+            dockerImage: getServiceRuntime(runtimeId)?.dockerImage || "node",
+            dockerVersion: dockerVersion,
         },
     });
 
@@ -43,19 +54,25 @@ export async function POST(request: NextRequest, { params }: { params: { project
         return NextResponse.json({ code: "ERROR", message: "Failed to create Service" });
     }
 
+    // Create the service details
     if (serviceType === "webService") {
-        // Create a default route for the service
-        await prisma.webSevice.create({
+        const webServiceDetails = serviceDetails as WebServiceDetails;
+        await prisma.webService.create({
             data: {
                 serviceId: createServiceResult.id,
-                buildCommand: "npm i && npm run build",
-                startCommand: "npm start",
-                gitHubUrl: "",
-                mainBranch: "main",
+                buildCommand: webServiceDetails.buildCommand,
+                startCommand: webServiceDetails.startCommand,
+                mainBranch: webServiceDetails.mainBranch,
+                gitHubUrl: webServiceDetails.gitHubUrl,
+                EnvVars: {
+                    create: webServiceDetails.envVars.map((envVar) => ({
+                        key: envVar.key,
+                        value: envVar.value,
+                    })),
+                }
             },
         });
     } else if (serviceType === "database") {
-        // Create a default route for the service
         await prisma.database.create({
             data: {
                 serviceId: createServiceResult.id,
@@ -66,6 +83,7 @@ export async function POST(request: NextRequest, { params }: { params: { project
         });
     }
 
+    // Deploy the service
     const deployResult = deployService(createServiceResult.id);
 
     if (!deployResult) {
@@ -76,13 +94,15 @@ export async function POST(request: NextRequest, { params }: { params: { project
 }
 
 export async function GET(request: NextRequest, { params }: { params: { projectId: string } }) {
-    console.log(params)
+    try {
+        const services = await prisma.service.findMany({
+            where: {
+                projectId: parseInt(params.projectId),
+            },
+        });
 
-    const services = await prisma.service.findMany({
-        where: {
-            projectId: parseInt(params.projectId),
-        },
-    });
-
-    return NextResponse.json({ code: "OK", message: "Services fetched", data: services });
+        return NextResponse.json({ code: "OK", message: "Services fetched", data: services });
+    } catch (error) {
+        return NextResponse.json({ code: "ERROR", message: "Failed to fetch Services" });
+    }
 }

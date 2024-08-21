@@ -32,21 +32,32 @@ export const serviceRuntimes = [
         typeId: "webService",
         name: "Node.js",
         dockerImage: "node",
-        dockerVersions: ["14", "16", "18", "20", "22"]
+        dockerVersions: ["14", "16", "18", "20", "22"],
+        defaultPort: "3000"
     },
     {
         id: "postgresql",
         typeId: "database",
         name: "PostgreSQL",
         dockerImage: "postgres",
-        dockerVersions: ["9.6", "10", "11", "12", "13", "14"]
+        dockerVersions: ["9.6", "10", "11", "12", "13", "14"],
+        defaultPort: "5432"
+    },
+    {
+        id: "mongodb",
+        typeId: "database",
+        name: "MongoDB",
+        dockerImage: "mongo",
+        dockerVersions: ["4.4", "5.0", "5.2"],
+        defaultPort: "27017"
     },
     {
         id: "minio",
         typeId: "objectStorage",
         name: "MinIO",
         dockerImage: "minio/minio",
-        dockerVersions: ["latest"]
+        dockerVersions: ["latest"],
+        defaultPort: "9000"
     }
 ] as const;
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { Listbox, ListboxItem } from '@nextui-org/react'
+import { Divider, Listbox, ListboxItem } from '@nextui-org/react'
 import { Project } from '@prisma/client'
 import { useParams, usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -27,14 +27,16 @@ export default function ProjectSidebar() {
   }, [])
 
   return (
-    <div className='flex flex-col grow w-full max-w-60 bg-content2 shrink-0'>
-      <h1 className='text-2xl p-4'>{project?.name}</h1>
+    <div className='flex flex-col grow w-full max-w-60 bg-content2 shrink-0 p-4'>
+      <h2 className='text-2xl'>{project?.name}</h2>
+
+      <Divider className='my-4' />
 
       <Listbox aria-label="Project navigation" className='flex-grow'>
         <ListboxItem
           key={`/projects/${params.projectId}`}
           href={`/projects/${params.projectId}`}
-          className={"py-3 px-4 " + (pathname === `/projects/${params.projectId}` ? 'bg-primary text-primary-foreground' : '')}
+          className={"py-3 px-4 " + (pathname === `/projects/${params.projectId}` ? 'bg-primary text-primary-foreground hover:!bg-primary-400 hover:!text-primary-foreground' : '')}
           startContent={<span className='material-symbols-outlined'>home</span>}
         >
           Overview
@@ -43,7 +45,7 @@ export default function ProjectSidebar() {
         <ListboxItem
           key={`/projects/${params.projectId}/services`}
           href={`/projects/${params.projectId}/services`}
-          className={"py-3 px-4 " + (pathname === `/projects/${params.projectId}/services` ? 'bg-primary text-primary-foreground' : '')}
+          className={"py-3 px-4 " + (pathname === `/projects/${params.projectId}/services` ? 'bg-primary text-primary-foreground hover:!bg-primary-400 hover:!text-primary-foreground' : '')}
           startContent={<span className='material-symbols-outlined'>api</span>}
         >
           Services
@@ -52,7 +54,7 @@ export default function ProjectSidebar() {
         <ListboxItem
           key={`/projects/${params.projectId}/deployments`}
           href={`/projects/${params.projectId}/deployments`}
-          className={"py-3 px-4 " + (pathname === `/projects/${params.projectId}/deployments` ? 'bg-primary text-primary-foreground' : '')}
+          className={"py-3 px-4 " + (pathname === `/projects/${params.projectId}/deployments` ? 'bg-primary text-primary-foreground hover:!bg-primary-400 hover:!text-primary-foreground' : '')}
           startContent={<span className='material-symbols-outlined'>cloud</span>}
         >
           Deployments
@@ -61,7 +63,7 @@ export default function ProjectSidebar() {
         <ListboxItem
           key={`/projects/${params.projectId}/settings`}
           href={`/projects/${params.projectId}/settings`}
-          className={"py-3 px-4 " + (pathname === `/projects/${params.projectId}/settings` ? 'bg-primary text-primary-foreground' : '')}
+          className={"py-3 px-4 " + (pathname === `/projects/${params.projectId}/settings` ? 'bg-primary text-primary-foreground hover:!bg-primary-400 hover:!text-primary-foreground' : '')}
           startContent={<span className='material-symbols-outlined'>settings</span>}
         >
           Settings

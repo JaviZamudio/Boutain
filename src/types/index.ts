@@ -1,20 +1,63 @@
+// CONSTANTS
 export const serviceTypes = [
     {
         id: "webService",
-        name: "Web Service"
-    },
-    {
-        id: "staticWebsite",
-        name: "Static Website"
+        icon: "language",
+        name: "Web Service",
+        routePrefix: "web"
     },
     {
         id: "database",
-        name: "Database"
+        icon: "database",
+        name: "Database",
+        routePrefix: "db"
     },
     {
         id: "objectStorage",
-        name: "Object Storage"
-    }
-]
+        icon: "folder_open",
+        name: "Object Storage",
+        routePrefix: "storage"
+    },
+    {
+        id: "staticWebsite",
+        icon: "web",
+        name: "Static Website",
+        routePrefix: "static"
+    },
+] as const;
 
-export type ServiceType = typeof serviceTypes[number]["id"];
+export const serviceRuntimes = [
+    {
+        id: "nodejs",
+        typeId: "webService",
+        name: "Node.js",
+        dockerImage: "node",
+        dockerVersions: ["14", "16", "18", "20", "22"]
+    },
+    {
+        id: "postgresql",
+        typeId: "database",
+        name: "PostgreSQL",
+        dockerImage: "postgres",
+        dockerVersions: ["9.6", "10", "11", "12", "13", "14"]
+    },
+    {
+        id: "minio",
+        typeId: "objectStorage",
+        name: "MinIO",
+        dockerImage: "minio/minio",
+        dockerVersions: ["latest"]
+    }
+] as const;
+
+// TYPES
+export type ServiceTypeId = typeof serviceTypes[number]["id"];
+export type ServiceRuntimeId = typeof serviceRuntimes[number]["id"];
+
+// FUNCTIONS
+export function getServiceType(id: ServiceTypeId) {
+    return serviceTypes.find(type => type.id === id);
+}
+export function getServiceRuntime(id: ServiceRuntimeId) {
+    return serviceRuntimes.find(runtime => runtime.id === id);
+}

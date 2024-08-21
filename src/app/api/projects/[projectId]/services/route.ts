@@ -1,4 +1,5 @@
 import { deployService } from "@/services/services";
+import { ServiceTypeId, serviceRuntimes } from "@/types";
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -7,15 +8,10 @@ const prisma = new PrismaClient();
 interface PostServicetBody {
     name: string;
     description: string;
-    gitHubUrl: string;
-    mainBranch: string;
-    buildCommand: string;
-    startCommand: string;
-    internalPort: string;
-    envVars: { key: string; value: string }[];
+    serviceType: ServiceTypeId;
 }
 export async function POST(request: NextRequest, { params }: { params: { projectId: string } }) {
-    const { name, description, gitHubUrl, mainBranch, buildCommand, startCommand, envVars, internalPort }: PostServicetBody = await request.json();
+    const { name, description, serviceType }: PostServicetBody = await request.json();
 
     // Set the port to the next available port
     let port = 0;
@@ -33,23 +29,42 @@ export async function POST(request: NextRequest, { params }: { params: { project
         data: {
             name,
             description: description || null,
-            gitHubUrl,
-            mainBranch,
-            buildCommand,
-            startCommand,
             port,
-            internalPort: +internalPort,
             projectId: parseInt(params.projectId),
+            serviceType: serviceType,
+            serviceRuntime: "nodejs",
+            dockerImage: "nodejs",
+            dockerVersion: "18",
+            // dockerConfig: JSON.stringify({ dockerImage: "nodejs", dockerVersion: "18" }),
         },
     });
 
-    await prisma.envVar.createMany({
-        data: envVars.map(({ key, value }) => ({
-            serviceId: createServiceResult.id,
-            key,
-            value,
-        })),
-    });
+    if (!createServiceResult) {
+        return NextResponse.json({ code: "ERROR", message: "Failed to create Service" });
+    }
+
+    if (serviceType === "webService") {
+        // Create a default route for the service
+        await prisma.webSevice.create({
+            data: {
+                serviceId: createServiceResult.id,
+                buildCommand: "npm i && npm run build",
+                startCommand: "npm start",
+                gitHubUrl: "",
+                mainBranch: "main",
+            },
+        });
+    } else if (serviceType === "database") {
+        // Create a default route for the service
+        await prisma.database.create({
+            data: {
+                serviceId: createServiceResult.id,
+                dbName: name,
+                dbUser: "admin",
+                dbPassword: "password",
+            },
+        });
+    }
 
     const deployResult = deployService(createServiceResult.id);
 
@@ -61,12 +76,11 @@ export async function POST(request: NextRequest, { params }: { params: { project
 }
 
 export async function GET(request: NextRequest, { params }: { params: { projectId: string } }) {
+    console.log(params)
+
     const services = await prisma.service.findMany({
         where: {
             projectId: parseInt(params.projectId),
-        },
-        include: {
-            EnvVars: true,
         },
     });
 

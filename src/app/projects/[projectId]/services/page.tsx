@@ -62,7 +62,8 @@ export default function ServicesPage({ params }: { params: { projectId: string }
             services.map((service) => (
               <TableRow key={service.id}>
                 <TableCell>
-                  <Link href={`/projects/${params.projectId}/services/${getServiceType(service.serviceType as ServiceTypeId)?.routePrefix}/${service.id}`}>
+                  {/* <Link href={`/projects/${params.projectId}/services/${getServiceType(service.serviceType as ServiceTypeId)?.routePrefix}/${service.id}`}> */}
+                  <Link href={`/projects/${params.projectId}/services/${service.id}`}>
                     {service.name}
                   </Link>
                 </TableCell>
@@ -77,7 +78,8 @@ export default function ServicesPage({ params }: { params: { projectId: string }
                 </TableCell>
                 <TableCell>{service.port}</TableCell>
                 <TableCell>
-                  <Button endContent={<span className="material-symbols-outlined">chevron_right</span>} as={Link} href={`/projects/${params.projectId}/services/${getServiceType(service.serviceType as ServiceTypeId)?.routePrefix}/${service.id}`}>
+                  {/* <Button endContent={<span className="material-symbols-outlined">chevron_right</span>} as={Link} href={`/projects/${params.projectId}/services/${getServiceType(service.serviceType as ServiceTypeId)?.routePrefix}/${service.id}`}> */}
+                  <Button endContent={<span className="material-symbols-outlined">chevron_right</span>} as={Link} href={`/projects/${params.projectId}/services/${service.id}`}>
                     View
                   </Button>
                 </TableCell>

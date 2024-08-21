@@ -55,9 +55,12 @@ export type ServiceTypeId = typeof serviceTypes[number]["id"];
 export type ServiceRuntimeId = typeof serviceRuntimes[number]["id"];
 
 // FUNCTIONS
-export function getServiceType(id: ServiceTypeId) {
-    return serviceTypes.find(type => type.id === id);
+export function getServiceType(typeId: ServiceTypeId) {
+    return serviceTypes.find(type => type.id === typeId);
 }
-export function getServiceRuntime(id: ServiceRuntimeId) {
-    return serviceRuntimes.find(runtime => runtime.id === id);
+export function getServiceRuntime(runtimeId: ServiceRuntimeId) {
+    return serviceRuntimes.find(runtime => runtime.id === runtimeId);
+}
+export function getRuntimesByType(typeId: ServiceTypeId) {
+    return serviceRuntimes.filter(runtime => runtime.typeId === typeId);
 }

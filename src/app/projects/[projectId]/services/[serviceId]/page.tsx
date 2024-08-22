@@ -1,5 +1,6 @@
 "use client"
 
+import { PutServiceBody } from "@/app/api/projects/[projectId]/services/[serviceId]/route";
 import { PasswordInput } from "@/components/PasswordInput";
 import { Button, Card, CardBody, Input, Link, Spacer, Textarea } from "@nextui-org/react";
 import { Tabs, Tab } from "@nextui-org/tabs";
@@ -100,7 +101,7 @@ export default function IndividualservicePage({ params }: { params: { serviceId:
           </Tab>
           <Tab key="settings" title="Settings">
             {service &&
-              <SettingsSection service={service} />
+              <WebServiceSettingsSection service={service} />
             }
           </Tab>
         </Tabs>
@@ -207,7 +208,7 @@ function EnvSection({ envVars: initialEnvVars, reloadCallback, serviceId }: { en
   );
 }
 
-function SettingsSection({ service }: { service: Service }) {
+function WebServiceSettingsSection({ service }: { service: Service }) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const initialForm = useMemo(() => ({
@@ -224,10 +225,21 @@ function SettingsSection({ service }: { service: Service }) {
     e.preventDefault();
     if (!isEditing) return;
 
+    const reqBody: PutServiceBody = {
+      description: form.description,
+      name: form.name,
+      serviceDetails: {
+        buildCommand: form.buildCommand,
+        gitHubUrl: form.gitHubUrl,
+        mainBranch: form.mainBranch,
+        startCommand: form.startCommand,
+      }
+    }
+
     // Update service
     const resBody = await fetch(`/api/projects/${service.projectId}/services/${service.id}`, {
       method: "PUT",
-      body: JSON.stringify(form),
+      body: JSON.stringify(reqBody),
       headers: {
         "Content-Type": "application/json",
       },

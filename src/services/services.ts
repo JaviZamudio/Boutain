@@ -5,6 +5,9 @@ import { getServiceRuntime, ServiceRuntimeId } from "@/types";
 
 const prisma = new PrismaClient();
 
+// TODO: Make exec async (it's currently blocking the event loop)
+// TODO: Catch errors and return false if something goes wrong (instead of returning true either way)
+
 export const deployService = async (serviceId: number) => {
     const service = await prisma.service.findUnique({
         where: {

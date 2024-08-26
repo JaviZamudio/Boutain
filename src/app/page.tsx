@@ -6,7 +6,7 @@ export default function Home() {
   return (
     <main>
       <h1 className="text-4xl font-bold text-center">Welcome</h1>
-      <Button as={NextLink} href="/services">Go to Services</Button>
+      <Button as={NextLink} href="/settings">Settings</Button>
 
 
     </main>

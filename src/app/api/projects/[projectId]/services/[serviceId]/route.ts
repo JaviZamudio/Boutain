@@ -54,7 +54,7 @@ export async function GET(request: NextRequest, { params }: { params: { serviceI
 
 // POST: Re-Deploy service
 export async function POST(request: NextRequest, { params }: { params: { serviceId: string } }) {
-    const result = deployService(parseInt(params.serviceId));
+    const result = await deployService(parseInt(params.serviceId));
 
     if (!result) {
         return NextResponse.json({ code: "ERROR", message: "Failed to re-deploy service" });

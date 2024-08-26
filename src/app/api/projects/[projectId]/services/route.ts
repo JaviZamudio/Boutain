@@ -14,6 +14,7 @@ interface WebServiceDetails {
 }
 
 export interface PostServicetBody {
+    adminId: number;
     name: string;
     description: string;
     serviceType: ServiceTypeId;
@@ -22,7 +23,7 @@ export interface PostServicetBody {
     serviceDetails: WebServiceDetails | Database;
 }
 export async function POST(request: NextRequest, { params }: { params: { projectId: string } }) {
-    const { name, description, serviceType, runtimeId, dockerVersion, serviceDetails } = await request.json() as PostServicetBody;
+    const { adminId, name, description, serviceType, runtimeId, dockerVersion, serviceDetails } = await request.json() as PostServicetBody;
 
     // Set the port to the next available port
     let port = 0;
@@ -47,6 +48,7 @@ export async function POST(request: NextRequest, { params }: { params: { project
             serviceRuntime: runtimeId,
             dockerImage: getServiceRuntime(runtimeId)?.dockerImage || "node",
             dockerVersion: dockerVersion,
+            adminId
         },
     });
 

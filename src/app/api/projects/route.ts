@@ -1,3 +1,4 @@
+import { createNetwork } from "@/services/docker";
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -21,6 +22,8 @@ export async function POST(request: NextRequest) {
             description: description || null,
         },
     });
+
+    createNetwork({ networkName: "p" + createProjectResult.id });
 
     return NextResponse.json({ code: "OK", message: "Project created", data: createProjectResult });
 }

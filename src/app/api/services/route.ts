@@ -1,4 +1,4 @@
-import { deployService } from "@/services/services";
+import { deployService } from "@/services/docker";
 import { ServiceRuntimeId, ServiceTypeId, getServiceRuntime, serviceRuntimes } from "@/types";
 import { Database, EnvVar, PrismaClient, WebService } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";

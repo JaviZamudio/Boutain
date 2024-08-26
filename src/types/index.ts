@@ -52,6 +52,14 @@ export const serviceRuntimes = [
         defaultPort: "27017"
     },
     {
+        id: "mysql",
+        typeId: "database",
+        name: "MySQL",
+        dockerImage: "mysql",
+        dockerVersions: ["latest", "9.0", "8.0", "5.7"],
+        defaultPort: "3306"
+    },
+    {
         id: "minio",
         typeId: "objectStorage",
         name: "MinIO",

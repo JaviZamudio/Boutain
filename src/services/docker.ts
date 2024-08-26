@@ -1,4 +1,4 @@
-import { EnvVar, PrismaClient, Service, WebService } from "@prisma/client";
+import { Database, EnvVar, PrismaClient, Project, Service, WebService } from "@prisma/client";
 import fs from "fs";
 import { execSync } from "child_process";
 import { getServiceRuntime, ServiceRuntimeId } from "@/types";
@@ -8,16 +8,27 @@ const prisma = new PrismaClient();
 // TODO: Make exec async (it's currently blocking the event loop)
 // TODO: Catch errors and return false if something goes wrong (instead of returning true either way)
 
+export const createNetwork = async ({ networkName }: { networkName: string }) => {
+    try {
+        execSync(`docker network create ${networkName}`);
+        return true;
+    } catch (error) {
+        console.error(error);
+        return false;
+    }
+}
+
 export const deployService = async (serviceId: number) => {
     const service = await prisma.service.findUnique({
         where: {
             id: serviceId,
         },
         include: {
+            Admin: true,
+            Project: true,
             WebService: {
                 include: { EnvVars: true },
             },
-            Admin: true,
             Database: true,
         }
     });
@@ -32,7 +43,9 @@ export const deployService = async (serviceId: number) => {
 
         if (service.serviceType === 'webService' && service.WebService) {
             internalPort = service.WebService.EnvVars.find((envVar) => envVar.key === 'PORT')?.value || internalPort
-            dockerfile = generateWebServiceDockefile({ ...service, internalPort, WebService: service.WebService }, {githubKey: service.Admin.githubKey || undefined})
+            dockerfile = generateWebServiceDockefile({ ...service, internalPort, WebService: service.WebService }, { githubKey: service.Admin.githubKey || undefined })
+        } else if (service.serviceType === "database") {
+            dockerfile
         } else {
             throw new Error(`Service type ${service.serviceType} is not supported`);
         }
@@ -47,7 +60,7 @@ export const deployService = async (serviceId: number) => {
         fs.writeFileSync(`./docker/${service.id}-Dockerfile`, dockerfile);
 
         // Kill existing container if it exists (to free up the port)
-        try{
+        try {
             console.log(`Killing existing container... s${service.id}`);
             execSync(`docker container rm --force s${service.id}`);
         } catch (error) {
@@ -69,7 +82,7 @@ export const deployService = async (serviceId: number) => {
     }
 }
 
-function generateWebServiceDockefile(service: Service & { WebService: WebService & { EnvVars: EnvVar[] }, internalPort: string}, options?: {githubKey?: string}) {
+function generateWebServiceDockefile(service: Service & { WebService: WebService & { EnvVars: EnvVar[] }, internalPort: string }, options?: { githubKey?: string }) {
     const internalPort = service.WebService.EnvVars.find((envVar) => envVar.key === 'PORT')?.value || '3000';
     const gitHubUrl = options?.githubKey ? service.WebService.gitHubUrl.replace('https://', `https://${options.githubKey}@`) : service.WebService.gitHubUrl;
 
@@ -98,6 +111,28 @@ EXPOSE ${internalPort}
 # Run the start command
 CMD ${JSON.stringify(service.WebService?.startCommand.split(' '))}
 `
+}
+
+function generateDatabaseDockerfile(service: Service & { Database: Database, Project: Project}){
+    return `
+# Use the Official ${service.dockerImage} Image
+from ${service.dockerImage}:${service.dockerVersion}
+
+# Using a volume and store it in ./docker/volumes/v${service.id}
+VOLUME /var/lib/mysql
+
+# Set environment variables
+ENV MYSQL_ROOT_PASSWORD=${service.Database.dbPassword}
+ENV MYSQL_DATABASE=${service.Database.dbName}
+ENV MYSQL_USER=${service.Database.dbUser}
+ENV MYSQL_PASSWORD=${service.Database.dbPassword}
+
+# Copy the database dump file to the container
+COPY ${service.Project.name}.sql /docker-entrypoint-initdb.d
+
+# Expose the port the app runs on
+EXPOSE 3306
+    `
 }
 
 // export function buildAndRunContainer({ containerName, imageName, port, internalPort, dockerfile }: { containerName: string, imageName: string, port: number, internalPort: number, dockerfile: string }) {

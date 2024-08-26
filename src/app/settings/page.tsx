@@ -5,7 +5,7 @@ import { Admin } from '@prisma/client'
 import React, { useContext, useEffect, useState } from 'react'
 
 export default function SettingsPage() {
-  const { currentUser: currentAdmin } = useContext(AuthContext)
+  const { currentAdmin: currentAdmin } = useContext(AuthContext)
   const [adminInfo, setAdminInfo] = useState<Admin>()
 
   const getAdminInfo = async () => {
@@ -51,7 +51,7 @@ export default function SettingsPage() {
       <section>
         <h2>GitHub Key</h2>
         <form onSubmit={handleSubmit}>
-          <Textarea placeholder="GitHub Key" value={adminInfo?.githubKey || ""} onValueChange={(value) => setAdminInfo({ ...adminInfo as Admin, githubKey: value })} />
+          <Textarea label="Github Key" placeholder="User:Token" value={adminInfo?.githubKey || ""} onValueChange={(value) => setAdminInfo({ ...adminInfo as Admin, githubKey: value })} />
           <Button type="submit">Save</Button>
         </form>
       </section>

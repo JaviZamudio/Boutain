@@ -2,14 +2,16 @@
 
 import { PostServicetBody } from "@/app/api/projects/[projectId]/services/route";
 import { PasswordInput } from "@/components/PasswordInput";
+import { AuthContext } from "@/contexts/AuthContext";
 import { getRuntimesByType, getServiceRuntime, ServiceRuntimeId } from "@/types";
 import { Button, Divider, Input, Link, Select, SelectItem, Textarea } from "@nextui-org/react";
 import { useRouter } from "next/navigation";
-import React, { useState } from 'react'
+import React, { useContext, useState } from 'react'
 
 
 export default function NewServicePage({ params }: { params: { projectId: string } }) {
   const router = useRouter()
+  const { currentAdmin } = useContext(AuthContext);
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -25,7 +27,10 @@ export default function NewServicePage({ params }: { params: { projectId: string
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if(!currentAdmin) return;
+
     const reqBody: PostServicetBody = {
+      adminId: currentAdmin?.id,
       name: form.name,
       description: form.description,
       serviceType: "webService",

@@ -1,27 +1,24 @@
 "use client"
 
+import { Admin } from '@prisma/client';
 import { usePathname, useRouter } from 'next/navigation';
 import React, { createContext, useEffect, useState } from 'react';
 
-interface User {
-    id: string;
-    name: string;
-}
-
 interface AuthContextProps {
-    currentUser?: User;
+    currentAdmin?: Admin;
     login: (email: string, password: string) => void;
     logout: () => void;
 }
 
 export const AuthContext = createContext<AuthContextProps>({
-    currentUser: undefined,
+    currentAdmin: undefined,
     login: () => { },
     logout: () => { },
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode; }) {
-    const [currentUser, setCurrentUser] = useState<User>();
+    const [currentAdmin, setCurrentUser] = useState<Admin>();
+    const [token, setToken] = useState<string>();
     const pathname = usePathname();
     const router = useRouter();
 
@@ -65,13 +62,15 @@ export function AuthProvider({ children }: { children: React.ReactNode; }) {
     };
 
     const protectRoutes = () => {
-        const token = localStorage.getItem('token');
+        const localToken = localStorage.getItem('token');
 
-        if (!token) {
+        if (!localToken) {
             if (pathname !== '/login') {
                 router.push('/login');
             }
-        } else if (currentUser) {
+        } else if (currentAdmin) {
+            if(!token) setToken(localToken)
+
             if (pathname === '/login') {
                 router.push('/');
             }
@@ -84,10 +83,10 @@ export function AuthProvider({ children }: { children: React.ReactNode; }) {
 
     useEffect(() => {
         protectRoutes();
-    }, [pathname, currentUser]);
+    }, [pathname, currentAdmin]);
 
     return (
-        <AuthContext.Provider value={{ currentUser, login, logout }}>
+        <AuthContext.Provider value={{ currentAdmin: currentAdmin, login, logout }}>
             {children}
         </AuthContext.Provider>
     );

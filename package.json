@@ -6,6 +6,7 @@
     "dev": "next dev -p 3019",
     "prismaStudio": "prisma studio --browser none",
     "prismaUpdate": "prisma db push",
+    "prismaMigrate": "prisma migrate dev --name update",
     "build": "prisma db push && next build",
     "start": "next start -p 3019",
     "lint": "next lint"
@@ -14,7 +15,7 @@
     "@nextui-org/react": "^2.4.6",
     "@prisma/client": "^5.18.0",
     "bcrypt": "^5.1.1",
-    "framer-motion": "^11.3.27",
+    "framer-motion": "^11.3.29",
     "jsonwebtoken": "^9.0.2",
     "next": "14.2.3",
     "react": "^18",
@@ -30,7 +31,7 @@
     "eslint-config-next": "14.2.3",
     "postcss": "^8",
     "prisma": "^5.18.0",
-    "tailwindcss": "^3.4.1",
+    "tailwindcss": "^3.4.10",
     "typescript": "^5"
   }
 }

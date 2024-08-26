@@ -18,6 +18,8 @@ model Admin {
   username  String  @unique
   password  String
   githubKey String?
+
+  Services Service[]
 }
 
 model Project {
@@ -41,8 +43,10 @@ model Service {
   dockerVersion  String
 
   projectId Int
+  adminId   Int
 
   Project    Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  Admin      Admin       @relation(fields: [adminId], references: [id], onDelete: Cascade)
   WebService WebService?
   Database   Database?
 }

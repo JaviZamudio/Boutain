@@ -40,7 +40,7 @@ export const serviceRuntimes = [
         typeId: "database",
         name: "PostgreSQL",
         dockerImage: "postgres",
-        dockerVersions: ["9.6", "10", "11", "12", "13", "14"],
+        dockerVersions: ["latest","9.6", "10", "11", "12", "13", "14"],
         defaultPort: "5432"
     },
     {

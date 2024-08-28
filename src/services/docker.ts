@@ -86,7 +86,7 @@ CMD ${JSON.stringify(service.WebService?.startCommand.split(' '))}
 `
 }
 
-function generateDatabaseDockerfile(service: Service & { Database: Database, Project: Project }) {
+function generateDatabaseDockerfile(service: Service & { Database: Database, Project: Project, internalPort: string }) {
     return `
 # Use the Official ${service.dockerImage} Image
 from ${service.dockerImage}:${service.dockerVersion}
@@ -99,9 +99,9 @@ ENV MYSQL_ROOT_PASSWORD=${service.Database.dbPassword}
 ENV MYSQL_DATABASE=${service.Database.dbName}
 ENV MYSQL_USER=${service.Database.dbUser}
 ENV MYSQL_PASSWORD=${service.Database.dbPassword}
-
-# Copy the database dump file to the container
-COPY ${service.Project.name}.sql /docker-entrypoint-initdb.d
+ENV POSTGRES_PASSWORD=${service.Database.dbPassword}
+ENV POSTGRES_USER=${service.Database.dbUser}
+ENV POSTGRES_DB=${service.Database.dbName}
 
 # Expose the port the app runs on
 EXPOSE 3306
@@ -114,7 +114,7 @@ function buildAndRunDatabaseContainer(service: Service & { Database: Database, P
     const volumeName = `v${service.id}`;
     const networkName = `n${service.Project.id}`;
     const internalPort = getServiceRuntime(service.serviceRuntime as ServiceRuntimeId)?.defaultPort || '3306';
-    const dockerfile = generateDatabaseDockerfile(service);
+    const dockerfile = generateDatabaseDockerfile({ ...service, internalPort });
 
     // Create the directory if it doesn't exist
     if (!fs.existsSync('./docker')) {

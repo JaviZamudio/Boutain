@@ -15,13 +15,12 @@ export default function NewServicePage({ params }: { params: { projectId: string
   const [form, setForm] = useState({
     name: "",
     description: "",
-    gitHubUrl: "",
-    mainBranch: "",
-    buildCommand: "",
-    startCommand: "",
     runtimeId: "",
     runtimeVersion: "",
-    envVars: [] as { key: string; value: string }[],
+
+    dbName: "",
+    dbUser: "",
+    dbPassword: "",
   });
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -33,15 +32,13 @@ export default function NewServicePage({ params }: { params: { projectId: string
       adminId: currentAdmin?.id,
       name: form.name,
       description: form.description,
-      serviceType: "webService",
+      serviceType: "database",
       runtimeId: form.runtimeId as ServiceRuntimeId,
       dockerVersion: form.runtimeVersion,
       serviceDetails: {
-        buildCommand: form.buildCommand,
-        startCommand: form.startCommand,
-        mainBranch: form.mainBranch,
-        gitHubUrl: form.gitHubUrl,
-        envVars: form.envVars,
+        dbName: form.dbName,
+        dbUser: form.dbUser,
+        dbPassword: form.dbPassword
       },
     };
 
@@ -59,7 +56,7 @@ export default function NewServicePage({ params }: { params: { projectId: string
 
     if (resBody.code === "OK") {
       alert("Service created successfully! \n On port: " + resBody.data.port);
-      router.push(`/projects/${params.projectId}/services/${resBody.data.id}`);
+      router.push(`/projects/${params.projectId}/services/db/${resBody.data.id}`);
     } else {
       alert("Failed to create service");
     }
@@ -67,27 +64,25 @@ export default function NewServicePage({ params }: { params: { projectId: string
     setForm({
       name: "",
       description: "",
-      gitHubUrl: "",
-      mainBranch: "",
-      buildCommand: "",
-      startCommand: "",
       runtimeId: "",
       runtimeVersion: "",
-      envVars: [],
+      dbName: "",
+      dbUser: "",
+      dbPassword: "",
     });
   };
 
   return (
     <>
       <h1 className="text-3xl font-bold text-center">
-        Create a New service
+        Create a New Database
       </h1>
       <form onSubmit={handleSubmit} className="space-y-4 flex flex-col">
         {/* General */}
         <section className="space-y-4">
           <h2 className="text-xl">General details</h2>
-          <Input label="Service Name" placeholder="My new service" onValueChange={(value) => setForm({ ...form, name: value })} value={form.name} isRequired />
-          <Textarea label="Description" placeholder="A short description of the service" onValueChange={(value) => setForm({ ...form, description: value })} value={form.description} />
+          <Input label="DB Name" placeholder="My new db" onValueChange={(value) => setForm({ ...form, name: value })} value={form.name} isRequired />
+          <Textarea label="Description" placeholder="A short description of the Database" onValueChange={(value) => setForm({ ...form, description: value })} value={form.description} />
         </section>
 
         <Divider />
@@ -101,7 +96,7 @@ export default function NewServicePage({ params }: { params: { projectId: string
             className="max-w-xs"
             onChange={(e) => setForm({ ...form, runtimeId: e.target.value, runtimeVersion: getServiceRuntime(e.target.value as ServiceRuntimeId)?.dockerVersions[0] || "" })}
           >
-            {getRuntimesByType("webService").map((runtime) => (
+            {getRuntimesByType("database").map((runtime) => (
               <SelectItem key={runtime.id} value={runtime.id}>
                 {runtime.name}
               </SelectItem>
@@ -127,52 +122,10 @@ export default function NewServicePage({ params }: { params: { projectId: string
 
         {/* Details */}
         <section className="space-y-4">
-          <h2 className="text-xl">Service details</h2>
-          <Input label="GitHub URL" placeholder="https://github.com/username/repo" onValueChange={(value) => setForm({ ...form, gitHubUrl: value })} value={form.gitHubUrl} isRequired />
-          <Input label="Main branch" placeholder="main" onValueChange={(value) => setForm({ ...form, mainBranch: value })} value={form.mainBranch} isRequired />
-          <Input label="Build command" placeholder="npm run build" onValueChange={(value) => setForm({ ...form, buildCommand: value })} value={form.buildCommand} isRequired />
-          <Input label="Start command" placeholder="npm run start" onValueChange={(value) => setForm({ ...form, startCommand: value })} value={form.startCommand} isRequired />
-        </section>
-
-        <Divider />
-
-        {/* Environment variables */}
-        <section className="space-y-4">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl">Environment variables</h2>
-            <Button
-              onClick={() => setForm({ ...form, envVars: [...form.envVars, { key: "", value: "" }] })}
-              type="button"
-              color="secondary"
-              variant="flat"
-              endContent={<span className="material-symbols-outlined">add</span>}
-            >
-              Environment variable
-            </Button>
-          </div>
-          <div className="space-y-2">
-            {form.envVars.map((envVar, index) => (
-              <div key={index} className="flex items-center gap-2">
-                <Input label="Key" value={envVar.key} onValueChange={(value) => {
-                  setForm({ ...form, envVars: form.envVars.map((ev, i) => (i === index ? { ...ev, key: value } : ev)) });
-                }} />
-                <PasswordInput label="Value" value={envVar.value} onValueChange={(value) => {
-                  setForm({ ...form, envVars: form.envVars.map((ev, i) => (i === index ? { ...ev, value: value } : ev)) });
-                }} />
-
-                <Button isIconOnly onClick={() => {
-                  setForm({ ...form, envVars: form.envVars.filter((_, i) => i !== index) });
-                }}
-                  color="danger"
-                  variant="faded"
-                >
-                  <span className="material-symbols-outlined">
-                    delete
-                  </span>
-                </Button>
-              </div>
-            ))}
-          </div>
+          <h2 className="text-xl">Database details</h2>
+          <Input label="Database Name" placeholder="my_db" onValueChange={(value) => setForm({ ...form, dbName: value })} value={form.dbName} isRequired />
+          <Input label="Database User" placeholder="root" onValueChange={(value) => setForm({ ...form, dbUser: value })} value={form.dbUser} isRequired autoComplete="off" />
+          <PasswordInput label="Database Password" placeholder="password" onValueChange={(value) => setForm({ ...form, dbPassword: value })} value={form.dbPassword} isRequired />
         </section>
 
         <Divider />

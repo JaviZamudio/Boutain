@@ -41,7 +41,7 @@ export async function POST(request: NextRequest, { params }: { params: { project
             port: "desc",
         },
     });
-    port = lastPort ? lastPort.port + 1 : 3000;
+    port = lastPort ? lastPort.port + 1 : 3020;
 
     // Create the service
     const createServiceResult = await prisma.service.create({

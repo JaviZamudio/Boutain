@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
         },
     });
 
-    createNetwork({ networkName: "p" + createProjectResult.id });
+    createNetwork({ networkName: "n" + createProjectResult.id });
 
     return NextResponse.json({ code: "OK", message: "Project created", data: createProjectResult });
 }

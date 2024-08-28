@@ -19,61 +19,34 @@ export const createNetwork = async ({ networkName }: { networkName: string }) =>
 }
 
 export const deployService = async (serviceId: number) => {
-    const service = await prisma.service.findUnique({
-        where: {
-            id: serviceId,
-        },
-        include: {
-            Admin: true,
-            Project: true,
-            WebService: {
-                include: { EnvVars: true },
-            },
-            Database: true,
-        }
-    });
-
-    if (!service) {
-        throw new Error(`No Service found with id ${serviceId}`);
-    }
-
     try {
-        let dockerfile = '';
-        let internalPort: string = getServiceRuntime(service.serviceRuntime as ServiceRuntimeId)?.defaultPort || '3000';
+        const service = await prisma.service.findUnique({
+            where: {
+                id: serviceId,
+            },
+            include: {
+                Admin: true,
+                Project: true,
+                WebService: {
+                    include: { EnvVars: true },
+                },
+                Database: true,
+            }
+        });
+    
+        // Check if service exists
+        if (!service) {
+            throw new Error(`No Service found with id ${serviceId}`);
+        }
 
+        // Build and run the container based on the service type
         if (service.serviceType === 'webService' && service.WebService) {
-            internalPort = service.WebService.EnvVars.find((envVar) => envVar.key === 'PORT')?.value || internalPort
-            dockerfile = generateWebServiceDockefile({ ...service, internalPort, WebService: service.WebService }, { githubKey: service.Admin.githubKey || undefined })
-        } else if (service.serviceType === "database") {
-            dockerfile
+            buildAndRunWebServiceContainer({ ...service, WebService: service.WebService, Project: service.Project, Admin: { ...service.Admin, githubKey: service.Admin.githubKey || '' } });
+        } else if (service.serviceType === "database" && service.Database) {
+            buildAndRunDatabaseContainer({ ...service, Database: service.Database, Project: service.Project });
         } else {
             throw new Error(`Service type ${service.serviceType} is not supported`);
         }
-
-        // Create the directory if it doesn't exist
-        if (!fs.existsSync('./docker')) {
-            fs.mkdirSync('./docker');
-        }
-
-        // Write Dockerfile to the directory
-        console.log("Writing Dockerfile...");
-        fs.writeFileSync(`./docker/${service.id}-Dockerfile`, dockerfile);
-
-        // Kill existing container if it exists (to free up the port)
-        try {
-            console.log(`Killing existing container... s${service.id}`);
-            execSync(`docker container rm --force s${service.id}`);
-        } catch (error) {
-            console.error("No container found with name s${service.id}");
-        }
-
-        // Build Docker image
-        console.log("Building Docker image...");
-        execSync(`docker build -t i${service.id} -f ./docker/${service.id}-Dockerfile .`);
-
-        // Run Docker container
-        console.log("Running Docker container...");
-        execSync(`docker run -d -p ${service.port}:${internalPort} --name s${service.id} i${service.id}`);
 
         return true;
     } catch (error) {
@@ -113,7 +86,7 @@ CMD ${JSON.stringify(service.WebService?.startCommand.split(' '))}
 `
 }
 
-function generateDatabaseDockerfile(service: Service & { Database: Database, Project: Project}){
+function generateDatabaseDockerfile(service: Service & { Database: Database, Project: Project }) {
     return `
 # Use the Official ${service.dockerImage} Image
 from ${service.dockerImage}:${service.dockerVersion}
@@ -133,6 +106,78 @@ COPY ${service.Project.name}.sql /docker-entrypoint-initdb.d
 # Expose the port the app runs on
 EXPOSE 3306
     `
+}
+
+function buildAndRunDatabaseContainer(service: Service & { Database: Database, Project: Project }) {
+    const containerName = `s${service.id}`;
+    const imageName = `i${service.id}`;
+    const volumeName = `v${service.id}`;
+    const networkName = `n${service.Project.id}`;
+    const internalPort = getServiceRuntime(service.serviceRuntime as ServiceRuntimeId)?.defaultPort || '3306';
+    const dockerfile = generateDatabaseDockerfile(service);
+
+    // Create the directory if it doesn't exist
+    if (!fs.existsSync('./docker')) {
+        fs.mkdirSync('./docker');
+    }
+
+    // Write Dockerfile to the directory
+    console.log("Writing Dockerfile...");
+    fs.writeFileSync(`./docker/${containerName}-Dockerfile`, dockerfile);
+
+    // Kill existing container if it exists (to free up the port)
+    try {
+        console.log(`Killing existing container... ${containerName}`);
+        execSync(`docker container rm --force ${containerName}`);
+    } catch (error) {
+        // Ignore error if container doesn't exist
+        console.log(`No container found with name ${containerName}`);
+    }
+
+    // Build Docker image
+    console.log("Building Docker image...");
+    execSync(`docker build -t ${imageName} -f ./docker/${containerName}-Dockerfile .`);
+
+    // Run Docker container
+    console.log("Running Docker container...");
+    execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${containerName} -v ${volumeName}:/var/lib/mysql ${imageName}`);
+}
+
+function buildAndRunWebServiceContainer(service: Service & { WebService: WebService & { EnvVars: EnvVar[] }, Project: Project, Admin: { githubKey?: string } }) {
+    const containerName = `s${service.id}`;
+    const imageName = `i${service.id}`;
+    const networkName = `n${service.Project.id}`;
+    const internalPort = service.WebService.EnvVars.find((envVar) => envVar.key === 'PORT')?.value
+        || getServiceRuntime(service.serviceRuntime as ServiceRuntimeId)?.defaultPort
+        || '3000';
+    const dockerfile = generateWebServiceDockefile({ ...service, internalPort }, { githubKey: service.Admin.githubKey });
+
+    // Create the directory if it doesn't exist
+    if (!fs.existsSync('./docker')) {
+        fs.mkdirSync('./docker');
+    }
+
+    // Write Dockerfile to the directory
+    console.log("Writing Dockerfile...");
+    fs.writeFileSync(`./docker/${containerName}-Dockerfile`, dockerfile);
+
+    // Kill existing container if it exists (to free up the port)
+    try {
+        console.log(`Killing existing container... ${containerName}`);
+        execSync(`docker container rm --force ${containerName}`);
+    } catch (error) {
+        // Ignore error if container doesn't exist
+        console.log(`No container found with name ${containerName}`);
+    }
+
+    // Build Docker image
+    console.log("Building Docker image...");
+    execSync(`docker build -t ${imageName} -f ./docker/${containerName}-Dockerfile .`);
+
+    // Run Docker container
+    console.log("Running Docker container...");
+    execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${containerName} ${imageName}`);
+
 }
 
 // export function buildAndRunContainer({ containerName, imageName, port, internalPort, dockerfile }: { containerName: string, imageName: string, port: number, internalPort: number, dockerfile: string }) {

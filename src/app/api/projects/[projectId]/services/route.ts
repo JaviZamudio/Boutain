@@ -13,6 +13,12 @@ interface WebServiceDetails {
     envVars: { key: string; value: string }[];
 }
 
+interface DatabaseDetails {
+    dbName: string,
+    dbUser: string,
+    dbPassword: string
+}
+
 export interface PostServicetBody {
     adminId: number;
     name: string;
@@ -20,7 +26,7 @@ export interface PostServicetBody {
     serviceType: ServiceTypeId;
     runtimeId: ServiceRuntimeId;
     dockerVersion: string;
-    serviceDetails: WebServiceDetails | Database;
+    serviceDetails: WebServiceDetails | DatabaseDetails;
 }
 export async function POST(request: NextRequest, { params }: { params: { projectId: string } }) {
     const { adminId, name, description, serviceType, runtimeId, dockerVersion, serviceDetails } = await request.json() as PostServicetBody;
@@ -75,18 +81,19 @@ export async function POST(request: NextRequest, { params }: { params: { project
             },
         });
     } else if (serviceType === "database") {
+        const databaseDetails = serviceDetails as DatabaseDetails;
         await prisma.database.create({
             data: {
                 serviceId: createServiceResult.id,
-                dbName: name,
-                dbUser: "admin",
-                dbPassword: "password",
+                dbName: databaseDetails.dbName,
+                dbUser: databaseDetails.dbUser,
+                dbPassword: databaseDetails.dbPassword
             },
         });
     }
 
     // Deploy the service
-    const deployResult = deployService(createServiceResult.id);
+    const deployResult = await deployService(createServiceResult.id);
 
     if (!deployResult) {
         return NextResponse.json({ code: "ERROR", message: "Failed to deploy Service" });

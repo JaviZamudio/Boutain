@@ -7,7 +7,7 @@
     "prismaStudio": "prisma studio --browser none",
     "prismaUpdate": "prisma db push",
     "prismaMigrate": "prisma migrate dev --name update",
-    "build": "prisma db push && next build",
+    "build": "prisma migrate deploy && next build",
     "start": "next start -p 3019",
     "lint": "next lint"
   },

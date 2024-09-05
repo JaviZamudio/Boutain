@@ -82,7 +82,7 @@ export default function IndividualservicePage({ params }: { params: { serviceId:
           endContent={<span className="material-symbols-outlined filled">rocket_launch</span>}
           color="primary"
           variant="ghost"
-          onClick={handleDeploy}
+          onPress={handleDeploy}
         >
           Deploy
         </Button>
@@ -171,7 +171,7 @@ function EnvSection({ envVars: initialEnvVars, reloadCallback, serviceId }: { en
                   setEnvVars((prev) => prev.map((e) => e.id === envVar.id ? { ...e, value: v } : e));
                 }} />
 
-                <Button isIconOnly onClick={() => {
+                <Button isIconOnly onPress={() => {
                   setEnvVars((prev) => prev.filter((e) => e.id !== envVar.id));
                 }}
                   color="danger"
@@ -190,7 +190,7 @@ function EnvSection({ envVars: initialEnvVars, reloadCallback, serviceId }: { en
         <div className="flex gap-2 mt-4">
           {/* Add Button */}
           <Button
-            onClick={() => {
+            onPress={() => {
               setEnvVars((prev) => [...prev, { id: Date.now(), key: "", value: "" }]);
             }}
             startContent={<span className="material-symbols-outlined">add</span>}
@@ -201,7 +201,7 @@ function EnvSection({ envVars: initialEnvVars, reloadCallback, serviceId }: { en
             Add
           </Button>
           {/* Cancel Button */}
-          <Button variant="flat" onClick={() => setEnvVars(initialEnvVars)} isDisabled={!shouldUpdate} >
+          <Button variant="flat" onPress={() => setEnvVars(initialEnvVars)} isDisabled={!shouldUpdate} >
             Cancel
           </Button>
           {/* Update Button */}

@@ -65,7 +65,7 @@ export default function NewServicePage() {
 
         <div>
           <h2>Environment variables</h2>
-          <Button onClick={() => setForm({ ...form, envVars: [...form.envVars, { key: "", value: "" }] })}>Add environment variable</Button>
+          <Button onPress={() => setForm({ ...form, envVars: [...form.envVars, { key: "", value: "" }] })}>Add environment variable</Button>
         </div>
         <div>
           {form.envVars.map((envVar, index) => (

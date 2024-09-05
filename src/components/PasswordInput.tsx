@@ -9,7 +9,7 @@ export function PasswordInput({ label, value, placeholder, isRequired, onValueCh
       placeholder={placeholder}
       isRequired={isRequired}
       endContent={
-        <Button isIconOnly variant="light" size="sm" onClick={() => setShowPassword(!showPassword)}>
+        <Button isIconOnly variant="light" size="sm" onPress={() => setShowPassword(!showPassword)}>
           <span className="material-symbols-outlined">
             {showPassword ? "visibility_off" : "visibility"}
           </span>

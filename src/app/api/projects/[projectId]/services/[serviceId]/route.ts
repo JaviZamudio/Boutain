@@ -46,6 +46,7 @@ export async function GET(request: NextRequest, { params }: { params: { serviceI
 
     const data = {
         ...service,
+        serviceHost: currentHost,
         url: `http://${currentHost}:${service.port}`,
     }
 

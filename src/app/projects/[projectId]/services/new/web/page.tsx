@@ -59,7 +59,7 @@ export default function NewServicePage({ params }: { params: { projectId: string
 
     if (resBody.code === "OK") {
       alert("Service created successfully! \n On port: " + resBody.data.port);
-      router.push(`/projects/${params.projectId}/services/${resBody.data.id}`);
+      router.push(`/projects/${params.projectId}/services/${resBody.data.id}/web`);
     } else {
       alert("Failed to create service");
     }
@@ -141,7 +141,7 @@ export default function NewServicePage({ params }: { params: { projectId: string
           <div className="flex justify-between items-center">
             <h2 className="text-xl">Environment variables</h2>
             <Button
-              onClick={() => setForm({ ...form, envVars: [...form.envVars, { key: "", value: "" }] })}
+              onPress={() => setForm({ ...form, envVars: [...form.envVars, { key: "", value: "" }] })}
               type="button"
               color="secondary"
               variant="flat"
@@ -160,7 +160,7 @@ export default function NewServicePage({ params }: { params: { projectId: string
                   setForm({ ...form, envVars: form.envVars.map((ev, i) => (i === index ? { ...ev, value: value } : ev)) });
                 }} />
 
-                <Button isIconOnly onClick={() => {
+                <Button isIconOnly onPress={() => {
                   setForm({ ...form, envVars: form.envVars.filter((_, i) => i !== index) });
                 }}
                   color="danger"

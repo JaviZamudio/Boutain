@@ -67,7 +67,7 @@ export default function IndividualProjectPage({ params }: { params: { projectId:
         </Button>
 
         {/* DELETE BUTTON */}
-        <Button onClick={handleDelete} color="danger" variant="bordered"
+        <Button onPress={handleDelete} color="danger" variant="bordered"
           startContent={<span className="material-symbols-outlined">delete</span>}
           className="absolute bottom-4 right-4"
         >

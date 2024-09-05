@@ -172,7 +172,7 @@ function buildAndRunWebServiceContainer(service: Service & { WebService: WebServ
 
     // Build Docker image
     console.log("Building Docker image...");
-    execSync(`docker build -t ${imageName} -f ./docker/${containerName}-Dockerfile .`);
+    execSync(`docker build --no-cache -t ${imageName} -f ./docker/${containerName}-Dockerfile .`);
 
     // Run Docker container
     console.log("Running Docker container...");

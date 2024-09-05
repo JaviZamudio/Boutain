@@ -56,7 +56,7 @@ export default function NewServicePage({ params }: { params: { projectId: string
 
     if (resBody.code === "OK") {
       alert("Service created successfully! \n On port: " + resBody.data.port);
-      router.push(`/projects/${params.projectId}/services/db/${resBody.data.id}`);
+      router.push(`/projects/${params.projectId}/services/${resBody.data.id}/db`);
     } else {
       alert("Failed to create service");
     }

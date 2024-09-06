@@ -24,12 +24,17 @@ export async function POST(req: NextRequest) {
 
     if (!admin) {
         // Admin Creation
-        const admin = await prisma.admin.create({
-            data: {
-                username: username,
-                password: hashSync(password, 10)
-            }
-        })
+        const admins = await prisma.admin.findMany()
+
+        if (admins.length === 0) {
+            const admin = await prisma.admin.create({
+                data: {
+                    username: username,
+                    password: hashSync(password, 10)
+                }
+            })
+        }
+
         return NextResponse.json({ code: "INCORRECT_USER", message: "Incorrect Username or Password" })
     }
 

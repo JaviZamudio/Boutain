@@ -33,7 +33,7 @@ export const deployService = async (serviceId: number) => {
                 Database: true,
             }
         });
-    
+
         // Check if service exists
         if (!service) {
             throw new Error(`No Service found with id ${serviceId}`);
@@ -58,6 +58,7 @@ export const deployService = async (serviceId: number) => {
 function generateWebServiceDockefile(service: Service & { WebService: WebService & { EnvVars: EnvVar[] }, internalPort: string }, options?: { githubKey?: string }) {
     const internalPort = service.WebService.EnvVars.find((envVar) => envVar.key === 'PORT')?.value || '3000';
     const gitHubUrl = options?.githubKey ? service.WebService.gitHubUrl.replace('https://', `https://${options.githubKey}@`) : service.WebService.gitHubUrl;
+    const serviceRuntime = getServiceRuntime(service.serviceRuntime as ServiceRuntimeId);
 
     return `
 # Use the official ${service.dockerImage} image
@@ -71,6 +72,7 @@ ${service.WebService?.EnvVars.map((envVar) => `ENV ${envVar.key}=${envVar.value}
 
 # Set default environment variables if they don't exist
 ${service.WebService?.EnvVars.some((envVar) => envVar.key === 'PORT') ? '' : `ENV PORT=${internalPort}`}
+${service.WebService?.EnvVars.some((envVar) => envVar.key === serviceRuntime?.webServiceProps?.prodVar) ? '' : `ENV ${serviceRuntime?.webServiceProps?.prodVar}=production`}
 
 # Clone the Service's GitHub repository, from the main branch
 RUN git clone -b ${service.WebService?.mainBranch} ${gitHubUrl} .
@@ -87,25 +89,20 @@ CMD ${JSON.stringify(service.WebService?.startCommand.split(' '))}
 }
 
 function generateDatabaseDockerfile(service: Service & { Database: Database, Project: Project, internalPort: string }) {
+    const serviceRuntime = getServiceRuntime(service.serviceRuntime as ServiceRuntimeId);
+
     return `
 # Use the Official ${service.dockerImage} Image
 from ${service.dockerImage}:${service.dockerVersion}
 
-# Using a volume and store it in ./docker/volumes/v${service.id}
-VOLUME /var/lib/mysql
-
 # Set environment variables
-ENV MYSQL_ROOT_PASSWORD=${service.Database.dbPassword}
-ENV MYSQL_DATABASE=${service.Database.dbName}
-ENV MYSQL_USER=${service.Database.dbUser}
-ENV MYSQL_PASSWORD=${service.Database.dbPassword}
-ENV POSTGRES_PASSWORD=${service.Database.dbPassword}
-ENV POSTGRES_USER=${service.Database.dbUser}
-ENV POSTGRES_DB=${service.Database.dbName}
+ENV ${serviceRuntime?.dbProps?.initDb}=${service.Database.dbName}
+ENV ${serviceRuntime?.dbProps?.initUser}=${service.Database.dbUser}
+ENV ${serviceRuntime?.dbProps?.initPassword}=${service.Database.dbPassword}
 
 # Expose the port the app runs on
-EXPOSE 3306
-    `
+EXPOSE ${serviceRuntime?.defaultPort}
+`
 }
 
 function buildAndRunDatabaseContainer(service: Service & { Database: Database, Project: Project }) {

@@ -1,9 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-import { compareSync, hashSync } from "bcrypt";
-import { sign, verify } from "jsonwebtoken";
-import { JWT_SECRET } from "@/configs";
-import { TokenInfo } from "@/types/types";
 
 const prisma = new PrismaClient()
 
@@ -22,12 +18,15 @@ export async function PUT(req: NextRequest, { params }: { params: { adminId: str
         return NextResponse.json({ code: "NOT_FOUND", message: "No Admin found with that ID" });
     }
 
+    // Base64 encode the key
+    const encryptedKey = Buffer.from(githubKey).toString('base64')
+
     const updatedAdmin = await prisma.admin.update({
         where: {
             id: adminId
         },
         data: {
-            githubKey: githubKey
+            githubKey: encryptedKey
         }
     })
 

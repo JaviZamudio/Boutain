@@ -12,8 +12,8 @@ export default function Header() {
     <div className='flex justify-between h-16 px-8 py-2 bg-zinc-800'>
       {/* LOGO */}
       <div className='flex items-center space-x-2'>
-        <Image src={"/images/BoutainLogo.svg"} alt="Boutain Logo" width={100} height={100} className='h-12 w-auto' />
-        <span className='text-white font-semibold text-2xl'>Boutain</span>
+        <Image src={"/images/BoutainLogo.svg"} alt="Butane Logo" width={100} height={100} className='h-12 w-auto' />
+        <span className='text-white font-semibold text-2xl'>Butane</span>
       </div>
 
       {/* NAVIGATION */}

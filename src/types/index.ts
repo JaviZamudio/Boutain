@@ -26,22 +26,31 @@ export const serviceTypes = [
     },
 ] as const;
 
-export const serviceRuntimes = [
+export const serviceRuntimes: ServiceRuntime[] = [
     {
         id: "nodejs",
         typeId: "webService",
         name: "Node.js",
         dockerImage: "node",
         dockerVersions: ["14", "16", "18", "20", "22"],
-        defaultPort: "3000"
+        defaultPort: "3000",
+        webServiceProps: {
+            prodVar: "NODE_ENV",
+        }
     },
     {
         id: "postgresql",
         typeId: "database",
         name: "PostgreSQL",
         dockerImage: "postgres",
-        dockerVersions: ["latest","9.6", "10", "11", "12", "13", "14"],
-        defaultPort: "5432"
+        dockerVersions: ["latest", "9.6", "10", "11", "12", "13", "14"],
+        defaultPort: "5432",
+        dbProps: {
+            initDb: "POSTGRES_DB",
+            initUser: "POSTGRES_USER",
+            initPassword: "POSTGRES_PASSWORD",
+            volumePath: "/var/lib/postgresql/data"
+        }
     },
     {
         id: "mongodb",
@@ -49,7 +58,13 @@ export const serviceRuntimes = [
         name: "MongoDB",
         dockerImage: "mongo",
         dockerVersions: ["4.4", "5.0", "5.2"],
-        defaultPort: "27017"
+        defaultPort: "27017",
+        dbProps: {
+            initDb: "MONGO_INITDB_DATABASE",
+            initUser: "MONGO_INITDB_ROOT_USERNAME",
+            initPassword: "MONGO_INITDB_ROOT_PASSWORD",
+            volumePath: "/data/db"
+        }
     },
     {
         id: "mysql",
@@ -57,7 +72,13 @@ export const serviceRuntimes = [
         name: "MySQL",
         dockerImage: "mysql",
         dockerVersions: ["latest", "9.0", "8.0", "5.7"],
-        defaultPort: "3306"
+        defaultPort: "3306",
+        dbProps: {
+            initDb: "MYSQL_DATABASE",
+            initUser: "MYSQL_USER",
+            initPassword: "MYSQL_PASSWORD",
+            volumePath: "/var/lib/mysql"
+        }
     },
     {
         id: "minio",
@@ -67,11 +88,28 @@ export const serviceRuntimes = [
         dockerVersions: ["latest"],
         defaultPort: "9000"
     }
-] as const;
+];
 
 // TYPES
-export type ServiceTypeId = typeof serviceTypes[number]["id"];
-export type ServiceRuntimeId = typeof serviceRuntimes[number]["id"];
+export type ServiceTypeId = "webService" | "database" | "objectStorage" | "staticWebsite";
+export type ServiceRuntimeId = "mongodb" | "mysql" | "minio" | "nodejs" | "postgresql";
+export type ServiceType = typeof serviceTypes[number];
+export type ServiceRuntime = {
+    dbProps?: {
+        initDb: string,
+        initUser: string,
+        initPassword: string,
+        volumePath: string
+    },
+    webServiceProps?: {
+        prodVar: string
+    },
+    id: ServiceRuntimeId,
+    typeId: ServiceTypeId,
+    name: string, dockerImage: string,
+    dockerVersions: string[],
+    defaultPort: string
+};
 
 // FUNCTIONS
 export function getServiceType(typeId: ServiceTypeId) {

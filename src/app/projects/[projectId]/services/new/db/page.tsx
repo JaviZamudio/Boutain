@@ -26,7 +26,7 @@ export default function NewServicePage({ params }: { params: { projectId: string
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if(!currentAdmin) return;
+    if (!currentAdmin) return;
 
     const reqBody: PostServicetBody = {
       adminId: currentAdmin?.id,
@@ -81,7 +81,7 @@ export default function NewServicePage({ params }: { params: { projectId: string
         {/* General */}
         <section className="space-y-4">
           <h2 className="text-xl">General details</h2>
-          <Input label="DB Name" placeholder="My new db" onValueChange={(value) => setForm({ ...form, name: value })} value={form.name} isRequired />
+          <Input label="Service Name" placeholder="My new db" onValueChange={(value) => setForm({ ...form, name: value })} value={form.name} isRequired />
           <Textarea label="Description" placeholder="A short description of the Database" onValueChange={(value) => setForm({ ...form, description: value })} value={form.description} />
         </section>
 

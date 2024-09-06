@@ -32,7 +32,7 @@ export const serviceRuntimes: ServiceRuntime[] = [
         typeId: "webService",
         name: "Node.js",
         dockerImage: "node",
-        dockerVersions: ["14", "16", "18", "20", "22"],
+        dockerVersions: ["latest", "14", "16", "18", "20", "22"],
         defaultPort: "3000",
         webServiceProps: {
             prodVar: "NODE_ENV",

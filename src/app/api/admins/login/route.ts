@@ -23,9 +23,8 @@ export async function POST(req: NextRequest) {
     })
 
     if (!admin) {
-        // Admin Creation
+        // Only create an admin if there are no admins
         const admins = await prisma.admin.findMany()
-
         if (admins.length === 0) {
             const admin = await prisma.admin.create({
                 data: {

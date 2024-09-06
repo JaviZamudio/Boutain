@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: React.ReactNode; }) {
     const router = useRouter();
 
     const login = async (username: string, password: string) => {
-        const resBody = await fetch('/api/login', {
+        const resBody = await fetch('/api/admins/login', {
             method: 'POST',
             body: JSON.stringify({ username, password }),
         }).then((res) => res.json());
@@ -51,7 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode; }) {
             return;
         }
 
-        const resBody = await fetch(`/api/login?token=${token}`).then((res) => res.json());
+        const resBody = await fetch(`/api/admins/login?token=${token}`).then((res) => res.json());
 
         if (resBody.code !== "OK") {
             return logout();
@@ -69,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode; }) {
                 router.push('/login');
             }
         } else if (currentAdmin) {
-            if(!token) setToken(localToken)
+            if (!token) setToken(localToken)
 
             if (pathname === '/login') {
                 router.push('/');

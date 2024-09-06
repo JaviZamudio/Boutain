@@ -84,6 +84,15 @@ export default function IndividualservicePage({ params }: { params: { serviceId:
           <span className="font-bold">DB Username:</span>
           {service?.Database.dbUser}
         </div>
+
+        <Button
+          onClick={handleDeploy}
+          color="primary"
+          variant="solid"
+          startContent={<span className="material-symbols-outlined">rocket_launch</span>}
+        >
+          Re-deploy
+        </Button>
       </section>
 
 

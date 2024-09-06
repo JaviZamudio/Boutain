@@ -72,7 +72,7 @@ ${service.WebService?.EnvVars.map((envVar) => `ENV ${envVar.key}=${envVar.value}
 
 # Set default environment variables if they don't exist
 ${service.WebService?.EnvVars.some((envVar) => envVar.key === 'PORT') ? '' : `ENV PORT=${internalPort}`}
-${service.WebService?.EnvVars.some((envVar) => envVar.key === serviceRuntime?.webServiceProps?.prodVar) ? '' : `ENV ${serviceRuntime?.webServiceProps?.prodVar}=production`}
+#${service.WebService?.EnvVars.some((envVar) => envVar.key === serviceRuntime?.webServiceProps?.prodVar) ? '' : `ENV ${serviceRuntime?.webServiceProps?.prodVar}=development`}
 
 # Clone the Service's GitHub repository, from the main branch
 RUN git clone -b ${service.WebService?.mainBranch} ${gitHubUrl} .
@@ -95,6 +95,9 @@ function generateDatabaseDockerfile(service: Service & { Database: Database, Pro
 # Use the Official ${service.dockerImage} Image
 from ${service.dockerImage}:${service.dockerVersion}
 
+# Volume for the database
+VOLUME ${serviceRuntime?.dbProps?.volumePath}
+
 # Set environment variables
 ENV ${serviceRuntime?.dbProps?.initDb}=${service.Database.dbName}
 ENV ${serviceRuntime?.dbProps?.initUser}=${service.Database.dbUser}
@@ -109,6 +112,8 @@ function buildAndRunDatabaseContainer(service: Service & { Database: Database, P
     const containerName = `s${service.id}`;
     const imageName = `i${service.id}`;
     const volumeName = `v${service.id}`;
+    const currentDir = process.cwd();
+    const volumesLocation = `${currentDir}/docker/volumes/p${service.Project.id}`;
     const networkName = `n${service.Project.id}`;
     const internalPort = getServiceRuntime(service.serviceRuntime as ServiceRuntimeId)?.defaultPort || '3306';
     const dockerfile = generateDatabaseDockerfile({ ...service, internalPort });
@@ -176,84 +181,3 @@ function buildAndRunWebServiceContainer(service: Service & { WebService: WebServ
     execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${containerName} ${imageName}`);
 
 }
-
-// export function buildAndRunContainer({ containerName, imageName, port, internalPort, dockerfile }: { containerName: string, imageName: string, port: number, internalPort: number, dockerfile: string }) {
-//     try {
-//         // Create the directory if it doesn't exist
-//         if (!fs.existsSync('./docker')) {
-//             fs.mkdirSync('./docker');
-//         }
-
-//         // Write Dockerfile to the directory
-//         console.log("Writing Dockerfile...");
-//         fs.writeFileSync(`./docker/${containerName}-Dockerfile`, dockerfile);
-
-//         // Kill existing container if it exists (to free up the port)
-//         try {
-//             console.log(`Killing existing container... ${containerName}`);
-//             execSync(`docker kill ${containerName}`);
-//             execSync(`docker rm ${containerName}`);
-//         } catch (error) {
-//             // Ignore error if container doesn't exist
-//             console.log(`No container found with name ${containerName}`);
-//         }
-
-//         // Build Docker image
-//         console.log("Building Docker image...");
-//         execSync(`docker build -t ${imageName} -f ./docker/${containerName}-Dockerfile .`);
-
-//         // Run Docker container
-//         console.log("Running Docker container...");
-//         execSync(`docker run -d -p ${port}:${internalPort} --name ${containerName} ${imageName}`);
-
-//         return true;
-//     } catch (error) {
-//         console.error(error);
-//         return false;
-//     }
-// }
-
-// export async function deployWebService(serviceId: number) {
-//     try {
-//         const service = await prisma.service.findUnique({
-//             where: {
-//                 id: serviceId,
-//             },
-//             include: {
-//                 WebService: {
-//                     include: { EnvVars: true },
-//                 },
-//             }
-//         });
-
-//         if (!service) {
-//             throw new Error(`No Service found with id ${serviceId}`);
-//         }
-
-//         if (service.serviceType !== 'webService') {
-//             throw new Error(`Incorrect service type: ${service.serviceType}, expected "webService"`);
-//         }
-
-//         if (!service.WebService) {
-//             throw new Error(`No WebService found for service with id ${serviceId}`);
-//         }
-
-//         let defaultPort = getServiceRuntime(service.serviceRuntime as ServiceRuntimeId)?.defaultPort || '3000';
-//         let internalPort = service.WebService.EnvVars.find((envVar) => envVar.key === 'PORT')?.value || defaultPort;
-
-//         // Generate Dockerfile
-//         const dockerfile = generateWebServiceDockefile({ ...service, internalPort, WebService: service.WebService });
-
-//         const result = buildAndRunContainer({
-//             containerName: `s${service.id}`,
-//             imageName: `i${service.id}`,
-//             port: service.port,
-//             internalPort: parseInt(internalPort),
-//             dockerfile,
-//         });
-
-//         return result;
-//     } catch (error) {
-//         return false;
-//     }
-// }

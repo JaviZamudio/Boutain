@@ -16,5 +16,11 @@ export const GET = async (req: NextRequest, { params }: { params: { adminId: str
         return NextResponse.json({ code: "NOT_FOUND", message: "No Admin found with that ID" });
     }
 
-    return NextResponse.json({ code: "OK", message: "Admin fetched", data: admin });
+    const data = {
+        ...admin,
+        password: undefined,
+        githubKey: admin.githubKey ? Buffer.from(admin.githubKey, 'base64').toString() : undefined,
+    }
+
+    return NextResponse.json({ code: "OK", message: "Admin fetched", data });
 }

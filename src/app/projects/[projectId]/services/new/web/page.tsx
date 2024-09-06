@@ -27,7 +27,7 @@ export default function NewServicePage({ params }: { params: { projectId: string
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if(!currentAdmin) return;
+    if (!currentAdmin) return;
 
     const reqBody: PostServicetBody = {
       adminId: currentAdmin?.id,
@@ -130,8 +130,8 @@ export default function NewServicePage({ params }: { params: { projectId: string
           <h2 className="text-xl">Service details</h2>
           <Input label="GitHub URL" placeholder="https://github.com/username/repo" onValueChange={(value) => setForm({ ...form, gitHubUrl: value })} value={form.gitHubUrl} isRequired />
           <Input label="Main branch" placeholder="main" onValueChange={(value) => setForm({ ...form, mainBranch: value })} value={form.mainBranch} isRequired />
-          <Input label="Build command" placeholder="npm run build" onValueChange={(value) => setForm({ ...form, buildCommand: value })} value={form.buildCommand} isRequired />
-          <Input label="Start command" placeholder="npm run start" onValueChange={(value) => setForm({ ...form, startCommand: value })} value={form.startCommand} isRequired />
+          <Input label="Build command" placeholder="npm install" onValueChange={(value) => setForm({ ...form, buildCommand: value })} value={form.buildCommand} isRequired />
+          <Input label="Start command" placeholder="npm start" onValueChange={(value) => setForm({ ...form, startCommand: value })} value={form.startCommand} isRequired />
         </section>
 
         <Divider />

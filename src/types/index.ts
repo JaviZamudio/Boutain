@@ -34,7 +34,7 @@ export const serviceRuntimes: ServiceRuntime[] = [
         dockerImage: "node",
         dockerVersions: ["latest", "14", "16", "18", "20", "22"],
         defaultPort: "3000",
-        webServiceProps: {
+        webSettings: {
             prodVar: "NODE_ENV",
         }
     },
@@ -45,7 +45,7 @@ export const serviceRuntimes: ServiceRuntime[] = [
         dockerImage: "postgres",
         dockerVersions: ["latest", "9.6", "10", "11", "12", "13", "14"],
         defaultPort: "5432",
-        dbProps: {
+        dbSettings: {
             initDb: "POSTGRES_DB",
             initUser: "POSTGRES_USER",
             initPassword: "POSTGRES_PASSWORD",
@@ -59,7 +59,7 @@ export const serviceRuntimes: ServiceRuntime[] = [
         dockerImage: "mongo",
         dockerVersions: ["4.4", "5.0", "5.2"],
         defaultPort: "27017",
-        dbProps: {
+        dbSettings: {
             initDb: "MONGO_INITDB_DATABASE",
             initUser: "MONGO_INITDB_ROOT_USERNAME",
             initPassword: "MONGO_INITDB_ROOT_PASSWORD",
@@ -73,7 +73,7 @@ export const serviceRuntimes: ServiceRuntime[] = [
         dockerImage: "mysql",
         dockerVersions: ["latest", "9.0", "8.0", "5.7"],
         defaultPort: "3306",
-        dbProps: {
+        dbSettings: {
             initDb: "MYSQL_DATABASE",
             initUser: "MYSQL_USER",
             initPassword: "MYSQL_PASSWORD",
@@ -95,13 +95,13 @@ export type ServiceTypeId = "webService" | "database" | "objectStorage" | "stati
 export type ServiceRuntimeId = "mongodb" | "mysql" | "minio" | "nodejs" | "postgresql";
 export type ServiceType = typeof serviceTypes[number];
 export type ServiceRuntime = {
-    dbProps?: {
+    dbSettings?: {
         initDb: string,
         initUser: string,
         initPassword: string,
         volumePath: string
     },
-    webServiceProps?: {
+    webSettings?: {
         prodVar: string
     },
     id: ServiceRuntimeId,

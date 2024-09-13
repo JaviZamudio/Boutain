@@ -57,7 +57,8 @@ export const deployService = async (serviceId: number) => {
 
 function generateWebServiceDockefile(service: Service & { WebService: WebService & { EnvVars: EnvVar[] }, internalPort: string }, options?: { githubKey?: string }) {
     const internalPort = service.WebService.EnvVars.find((envVar) => envVar.key === 'PORT')?.value || '3000';
-    const gitHubUrl = options?.githubKey ? service.WebService.gitHubUrl.replace('https://', `https://${options.githubKey}@`) : service.WebService.gitHubUrl;
+    const decryptedGitHubKey = options?.githubKey ? Buffer.from(options.githubKey, 'base64').toString('utf-8') : '';
+    const gitHubUrl = options?.githubKey ? service.WebService.gitHubUrl.replace('https://', `https://${decryptedGitHubKey}@`) : service.WebService.gitHubUrl;
     const serviceRuntime = getServiceRuntime(service.serviceRuntime as ServiceRuntimeId);
 
     return `
@@ -72,7 +73,7 @@ ${service.WebService?.EnvVars.map((envVar) => `ENV ${envVar.key}=${envVar.value}
 
 # Set default environment variables if they don't exist
 ${service.WebService?.EnvVars.some((envVar) => envVar.key === 'PORT') ? '' : `ENV PORT=${internalPort}`}
-#${service.WebService?.EnvVars.some((envVar) => envVar.key === serviceRuntime?.webServiceProps?.prodVar) ? '' : `ENV ${serviceRuntime?.webServiceProps?.prodVar}=development`}
+#${service.WebService?.EnvVars.some((envVar) => envVar.key === serviceRuntime?.webSettings?.prodVar) ? '' : `ENV ${serviceRuntime?.webSettings?.prodVar}=development`}
 
 # Clone the Service's GitHub repository, from the main branch
 RUN git clone -b ${service.WebService?.mainBranch} ${gitHubUrl} .
@@ -96,12 +97,13 @@ function generateDatabaseDockerfile(service: Service & { Database: Database, Pro
 from ${service.dockerImage}:${service.dockerVersion}
 
 # Volume for the database
-VOLUME ${serviceRuntime?.dbProps?.volumePath}
+VOLUME ${serviceRuntime?.dbSettings?.volumePath}
 
 # Set environment variables
-ENV ${serviceRuntime?.dbProps?.initDb}=${service.Database.dbName}
-ENV ${serviceRuntime?.dbProps?.initUser}=${service.Database.dbUser}
-ENV ${serviceRuntime?.dbProps?.initPassword}=${service.Database.dbPassword}
+ENV ${serviceRuntime?.dbSettings?.initDb}=${service.Database.dbName}
+ENV ${serviceRuntime?.dbSettings?.initUser}=${service.Database.dbUser}
+ENV ${serviceRuntime?.dbSettings?.initPassword}=${service.Database.dbPassword}
+ENV MYSQL_ROOT_PASSWORD=${service.Database.dbPassword}
 
 # Expose the port the app runs on
 EXPOSE ${serviceRuntime?.defaultPort}
@@ -111,10 +113,11 @@ EXPOSE ${serviceRuntime?.defaultPort}
 function buildAndRunDatabaseContainer(service: Service & { Database: Database, Project: Project }) {
     const containerName = `s${service.id}`;
     const imageName = `i${service.id}`;
+    const networkName = `n${service.Project.id}`;
     const volumeName = `v${service.id}`;
     const currentDir = process.cwd();
-    const volumesLocation = `${currentDir}/docker/volumes/p${service.Project.id}`;
-    const networkName = `n${service.Project.id}`;
+    const volumeHostLocation = `${currentDir}/docker/volumes/p${service.Project.id}/${volumeName}`;
+    const volumeContaierDestination = getServiceRuntime(service.serviceRuntime as ServiceRuntimeId)?.dbSettings?.volumePath;
     const internalPort = getServiceRuntime(service.serviceRuntime as ServiceRuntimeId)?.defaultPort || '3306';
     const dockerfile = generateDatabaseDockerfile({ ...service, internalPort });
 
@@ -142,7 +145,7 @@ function buildAndRunDatabaseContainer(service: Service & { Database: Database, P
 
     // Run Docker container
     console.log("Running Docker container...");
-    execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${containerName} -v ${volumeName}:/var/lib/mysql ${imageName}`);
+    execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${containerName} -v ${volumeHostLocation}:${volumeContaierDestination} --restart always ${imageName}`);
 }
 
 function buildAndRunWebServiceContainer(service: Service & { WebService: WebService & { EnvVars: EnvVar[] }, Project: Project, Admin: { githubKey?: string } }) {
@@ -178,6 +181,6 @@ function buildAndRunWebServiceContainer(service: Service & { WebService: WebServ
 
     // Run Docker container
     console.log("Running Docker container...");
-    execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${containerName} ${imageName}`);
+    execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${containerName} --restart always ${imageName}`);
 
 }

@@ -57,7 +57,7 @@ export const serviceRuntimes: ServiceRuntime[] = [
         typeId: "database",
         name: "MongoDB",
         dockerImage: "mongo",
-        dockerVersions: ["4.4", "5.0", "5.2"],
+        dockerVersions: ["latest", "4.4", "5.0", "5.2"],
         defaultPort: "27017",
         dbSettings: {
             initDb: "MONGO_INITDB_DATABASE",

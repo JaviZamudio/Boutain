@@ -36,12 +36,14 @@ export function AuthProvider({ children }: { children: React.ReactNode; }) {
 
         const token = resBody.data;
         localStorage.setItem('token', token);
+        document.cookie = `token=${token}; path=/`;
 
         validateToken();
     };
 
     const logout = () => {
         localStorage.removeItem('token');
+        document.cookie = 'token=; path=/';
         setCurrentUser(undefined);
     };
 

@@ -16,7 +16,13 @@ export async function middleware(request: NextRequest) {
         return NextResponse.json({ code: "INVALID_TOKEN", message: "Invalid token" })
     }
 
-    return NextResponse.next()
+    request.headers.set('adminId', resBody.data.adminId);
+    return NextResponse.next({
+        request: {
+            ...request,
+            headers: request.headers,
+        }
+    });
 }
 
 // See "Matching Paths" below to learn more

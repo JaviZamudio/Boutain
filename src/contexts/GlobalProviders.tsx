@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { ThemeProvider } from 'bout-themes';
 
 export { Link as NextLink };
 export { Image as NextImage };
@@ -18,8 +19,10 @@ export function GlobalProviders({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <NextUIProvider navigate={handleNavigate} className='h-screen flex flex-col grow'>
-      {children}
-    </NextUIProvider>
+    <ThemeProvider useSystemTheme={true} defaultTheme='dark'>
+      <NextUIProvider navigate={handleNavigate} className='h-screen flex flex-col grow'>
+        {children}
+      </NextUIProvider>
+    </ThemeProvider>
   )
 }

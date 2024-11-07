@@ -39,6 +39,14 @@ export const serviceRuntimes: ServiceRuntime[] = [
         }
     },
     {
+        id: ".net",
+        typeId: "webService",
+        name: ".NET",
+        dockerImage: "mcr.microsoft.com/dotnet/sdk",
+        dockerVersions: ["latest", "7.0", "6.0"],
+        defaultPort: "5000"
+    },
+    {
         id: "postgresql",
         typeId: "database",
         name: "PostgreSQL",
@@ -92,7 +100,7 @@ export const serviceRuntimes: ServiceRuntime[] = [
 
 // TYPES
 export type ServiceTypeId = "webService" | "database" | "objectStorage" | "staticWebsite";
-export type ServiceRuntimeId = "mongodb" | "mysql" | "minio" | "nodejs" | "postgresql";
+export type ServiceRuntimeId = "mongodb" | "mysql" | "minio" | "nodejs" | "postgresql" | ".net"
 export type ServiceType = typeof serviceTypes[number];
 export type ServiceRuntime = {
     dbSettings?: {

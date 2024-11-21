@@ -1,7 +1,8 @@
 "use client"
 import { AuthContext } from '@/contexts/AuthContext'
-import { Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Textarea } from '@nextui-org/react'
+import { Button, Input, Modal, ModalBody, ModalContent, ModalFooter, ModalHeader, Switch, Table, TableBody, TableCell, TableColumn, TableHeader, TableRow, Textarea } from '@nextui-org/react'
 import { Admin } from '@prisma/client'
+import { ThemeContext } from 'bout-themes'
 import React, { useContext, useEffect, useMemo, useState } from 'react'
 
 export default function SettingsPage() {
@@ -61,12 +62,33 @@ export default function SettingsPage() {
       <AdminsSection />
 
       <section>
+        <h2 className='font-semibold text-xl'>Theme & Language</h2>
+        <ThemeSwitch />
+      </section>
+
+      <section>
         <h2 className='font-semibold text-xl'>Logout</h2>
         <Button onClick={logout} color='danger' variant='bordered' startContent={<span className='material-symbols-outlined'>logout</span>}>
           Logout
         </Button>
       </section>
     </div>
+  )
+}
+
+function ThemeSwitch() {
+  const { theme, toggleTheme } = useContext(ThemeContext);
+
+  return (
+    <Switch
+      checked={theme === 'dark'}
+      onChange={toggleTheme}
+      thumbIcon={({ isSelected, className }) =>
+        <span className={`${className} material-symbols-outlined !text-lg`}>{isSelected ? 'dark_mode' : 'light_mode'}</span>
+      }
+    >
+      {theme === 'dark' ? 'Dark' : 'Light'}
+    </Switch>
   )
 }
 

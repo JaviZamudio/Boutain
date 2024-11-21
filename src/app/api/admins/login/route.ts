@@ -13,8 +13,6 @@ interface TokenInfo {
 export async function POST(req: NextRequest) {
     const { username, password } = await req.json()
 
-    console.log({ username, password })
-
     // Get user
     const admin = await prisma.admin.findUnique({
         where: {

@@ -28,17 +28,20 @@ export default function ProjectsPage() {
   }, []);
 
   return (
-    <main>
-      <h1 className="text-4xl font-bold text-center">Projects</h1>
+    <main className="p-4">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-semibold">Projects</h1>
 
-      <Button
-        as={Link} href="/projects/new"
-        startContent={<span className="material-symbols-outlined">add</span>}
-      >
-        New Project
-      </Button>
+        <Button
+          as={Link} href="/projects/new"
+          startContent={<span className="material-symbols-outlined">add</span>}
+          color="primary"
+        >
+          New Project
+        </Button>
+      </div>
 
-      <Table aria-label="Example static collection table">
+      <Table aria-label="Example static collection table" className="mt-4">
         <TableHeader>
           <TableColumn>Name</TableColumn>
           <TableColumn>N. Services</TableColumn>

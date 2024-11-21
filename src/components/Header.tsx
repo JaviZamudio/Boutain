@@ -1,11 +1,13 @@
 "use client"
 
+import { AuthContext } from '@/contexts/AuthContext'
 import { Link } from '@nextui-org/react'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import React from 'react'
+import React, { useContext } from 'react'
 
 export default function Header() {
+  const { currentAdmin } = useContext(AuthContext)
   const pathname = usePathname()
 
   return (
@@ -17,10 +19,12 @@ export default function Header() {
       </div>
 
       {/* NAVIGATION */}
-      <nav className='flex justify-end items-center space-x-4'>
-        <Link href='/' className={`text-white font-semibold border-b-2 ${pathname === '/' ? 'border-secondary' : 'border-transparent'}`}>Home</Link>
-        <Link href='/projects' className={`text-white font-semibold border-b-2 ${pathname === '/projects' ? 'border-secondary' : 'border-transparent'}`}>Projects</Link>
-      </nav>
+      {currentAdmin &&
+        <nav className='flex justify-end items-center space-x-4'>
+          <Link href='/' className={`text-white font-semibold border-b-2 ${pathname === '/' ? 'border-secondary' : 'border-transparent'}`}>Home</Link>
+          <Link href='/projects' className={`text-white font-semibold border-b-2 ${pathname === '/projects' ? 'border-secondary' : 'border-transparent'}`}>Projects</Link>
+        </nav>
+      }
     </div>
   )
 }

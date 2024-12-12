@@ -28,6 +28,7 @@ export interface PostServicetBody {
     dockerVersion: string;
     serviceDetails: WebServiceDetails | DatabaseDetails;
 }
+
 export async function POST(request: NextRequest, { params }: { params: { projectId: string } }) {
     const { adminId, name, description, serviceType, runtimeId, dockerVersion, serviceDetails } = await request.json() as PostServicetBody;
 

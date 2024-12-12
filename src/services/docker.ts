@@ -147,26 +147,29 @@ async function buildAndRunDatabaseContainer(service: Service & { Database: Datab
             // Run Docker container
             console.log("Running Docker container...");
             const newContainerName = `${containerName}_${version}`;
-            const newContainer = execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${containerName}_1 -v ${volumeHostLocation}:${volumeContaierDestination} --restart always ${imageName}`);
+            const newContainer = execSync(`docker run -d -p 6001:${internalPort} --network ${networkName} --name ${newContainerName} -v ${volumeHostLocation}:${volumeContaierDestination} --restart always ${imageName}`);
 
+            if (newContainer) {
+                // Delete last container
+                console.log(`Killing existing container... ${containerName}`);
+                execSync(`docker container rm --force ${name}`);
+
+                // Reassign the same port to the container 
+                execSync(`docker container rm --force ${newContainerName}`);
+                execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${newContainerName} -v ${volumeHostLocation}:${volumeContaierDestination} --restart always ${imageName}`);
+
+            }
         } catch (error: any) {
-
+            console.log(error)
+            // Ignore error if container doesn't exist
+            console.log(`No container found with name ${containerName}`);
         }
+    } else {
+        // Run Docker first container
+        console.log("Running Docker container...");
+        execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${containerName}_1 -v ${volumeHostLocation}:${volumeContaierDestination} --restart always ${imageName}`);
+
     }
-
-
-    // Kill existing container if it exists (to free up the port)
-    try {
-        console.log(`Killing existing container... ${containerName}`);
-        execSync(`docker container rm --force ${containerName}`);
-    } catch (error) {
-        // Ignore error if container doesn't exist
-        console.log(`No container found with name ${containerName}`);
-    }
-
-    // Run Docker container
-    console.log("Running Docker container...");
-    execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${containerName}_1 -v ${volumeHostLocation}:${volumeContaierDestination} --restart always ${imageName}`);
 }
 
 async function buildAndRunWebServiceContainer(service: Service & { WebService: WebService & { EnvVars: EnvVar[] }, Project: Project, Admin: { githubKey?: string } }) {

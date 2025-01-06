@@ -197,32 +197,7 @@ async function buildAndRunWebServiceContainer(service: Service & { WebService: W
     // Check if a container exists
     const { containerExists, container } = await checkContainerExists(containerName);
 
-    const imageVersion = await checkVersion(image) + 1;
-    const newImageName = `${imageName}_${imageVersion}`;
-    if (imageExists) {
-        try {
-            // Check image version
-
-            // Build new docker image
-            console.log("Building Docker image...");
-            const newImage = execSync(`docker build --no-cache -t ${newImageName} -f ./docker/${containerName}-Dockerfile .`);
-
-            if (newImage) {
-                // Delete last image
-                console.log("Killing docker image...");
-                execSync(`docker rmi $(docker images | grep ${imageName})`);
-            }
-        } catch (error) {
-            console.log(error);
-            console.log("Docker image not exists...");
-        }
-    } else {
-        // Build first docker image
-        console.log("Building Docker image...");
-        execSync(`docker build --no-cache -t ${imageName}_1 -f ./docker/${containerName}-Dockerfile .`);
-    }
-
-    console.log("Se crea la imagen");
+    const newImageName = await createImage(imageExists, imageName, containerName);
 
     if (containerExists) {
         try {
@@ -294,6 +269,33 @@ async function checkContainerExists(containerName: string): Promise<{ containerE
 function checkVersion(name: string | ''): number {
     const version = name.split('_').pop();
     return Number(version);
+}
+
+async function createImage(imageExists: boolean, imageName: string, containerName: string): Promise<string | undefined> {
+    if (imageExists) {
+        try {
+            const imageVersion = await checkVersion(imageName) + 1;
+            const newImageName = `${imageName}_${imageVersion}`;
+            // Build new docker image
+            console.log("Building Docker image...");
+            const newImage = execSync(`docker build --no-cache -t ${newImageName} -f ./docker/${containerName}-Dockerfile .`);
+
+            if (newImage) {
+                // Delete last image
+                console.log("Killing docker image...");
+                execSync(`docker rmi $(docker images | grep ${imageName})`);
+            }
+            return newImageName;
+        } catch (error) {
+            console.log(error);
+            console.log("Docker image not exists...");
+        }
+    } else {
+        // Build first docker image
+        console.log("Building Docker image...");
+        execSync(`docker build --no-cache -t ${imageName}_1 -f ./docker/${containerName}-Dockerfile .`);
+        return `${imageName}_1`;
+    }
 }
 
 //TODO: Check image version and create de new version

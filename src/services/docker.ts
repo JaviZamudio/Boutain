@@ -130,7 +130,7 @@ async function buildAndRunDatabaseContainer(service: Service & { Database: Datab
     }
 
     // Check if a container exists
-    const { containerExists, name } = await checkContainerExists(containerName);
+    const { containerExists, container } = await checkContainerExists(containerName);
 
     // Write Dockerfile to the directory
     console.log("Writing Dockerfile...");
@@ -144,7 +144,7 @@ async function buildAndRunDatabaseContainer(service: Service & { Database: Datab
         console.log(containerExists)
         try {
             // Check container version 
-            const version = await checkContainerVersion(name) + 1;
+            const version = await checkVersion(container) + 1;
 
             // Run Docker container
             console.log("Running Docker container...");
@@ -176,7 +176,7 @@ async function buildAndRunDatabaseContainer(service: Service & { Database: Datab
 
 async function buildAndRunWebServiceContainer(service: Service & { WebService: WebService & { EnvVars: EnvVar[] }, Project: Project, Admin: { githubKey?: string } }) {
     const containerName = `s${service.id}_v`;
-    const imageName = `i${service.id}`;
+    const imageName = `i${service.id}_v`;
     const networkName = `n${service.Project.id}`;
     const internalPort = service.WebService.EnvVars.find((envVar) => envVar.key === 'PORT')?.value
         || getServiceRuntime(service.serviceRuntime as ServiceRuntimeId)?.defaultPort
@@ -187,27 +187,52 @@ async function buildAndRunWebServiceContainer(service: Service & { WebService: W
     if (!fs.existsSync('./docker')) {
         fs.mkdirSync('./docker');
     }
-
-    // Check if a container exists
-    const { containerExists, name } = await checkContainerExists(containerName);
-
     // Write Dockerfile to the directory
     console.log("Writing Dockerfile...");
     fs.writeFileSync(`./docker/${containerName}-Dockerfile`, dockerfile);
 
-    // Build Docker image 
-    console.log("Building Docker image...");
-    execSync(`docker build --no-cache -t ${imageName} -f ./docker/${containerName}-Dockerfile .`);
+    // Check if an image exists
+    const { imageExists, image } = await checkImageExists(imageName);
+
+    // Check if a container exists
+    const { containerExists, container } = await checkContainerExists(containerName);
+
+    const imageVersion = await checkVersion(image) + 1;
+    const newImageName = `${imageName}_${imageVersion}`;
+    if (imageExists) {
+        try {
+            // Check image version
+
+            // Build new docker image
+            console.log("Building Docker image...");
+            const newImage = execSync(`docker build --no-cache -t ${newImageName} -f ./docker/${containerName}-Dockerfile .`);
+
+            if (newImage) {
+                // Delete last image
+                console.log("Killing docker image...");
+                execSync(`docker rmi $(docker images | grep ${imageName})`);
+            }
+        } catch (error) {
+            console.log(error);
+            console.log("Docker image not exists...");
+        }
+    } else {
+        // Build first docker image
+        console.log("Building Docker image...");
+        execSync(`docker build --no-cache -t ${imageName}_1 -f ./docker/${containerName}-Dockerfile .`);
+    }
+
+    console.log("Se crea la imagen");
 
     if (containerExists) {
         try {
             // Check container version
-            const version = await checkVersion(name) + 1;
+            const version = await checkVersion(container) + 1;
 
             // Run Docker container
             console.log("Running Docker container...");
             const newContainerName = `${containerName}_${version}`;
-            const newContainer = execSync(`docker run -d -p 6000:${internalPort} --network ${networkName} --name ${newContainerName} --restart always ${imageName}`);
+            const newContainer = execSync(`docker run -d -p 6000:${internalPort} --network ${networkName} --name ${newContainerName} --restart always ${newImageName}`);
 
             if (newContainer) {
                 // Delete the last container
@@ -216,21 +241,39 @@ async function buildAndRunWebServiceContainer(service: Service & { WebService: W
 
                 // Reassign the same port to the container
                 execSync(`docker container rm --force ${newContainerName}`);
-                execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${newContainerName} --restart always ${imageName}`);
+                execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${newContainerName} --restart always ${newImageName}`);
             }
         } catch (error) {
-            console.log(error)
+            console.log(error);
             // Ignore error if container doesn't exist
             console.log(`No container found with name ${containerName}`);
         }
     } else {
         // Run first Docker container
         console.log("Running Docker container...");
-        execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${containerName}_1 --restart always ${imageName}`);
+        execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${containerName}_1 --restart always ${imageName}_1`);
     }
 }
 
-async function checkContainerExists(containerName: string): Promise<{ containerExists: boolean; name: string }> {
+async function checkImageExists(imageName: string): Promise<{ imageExists: boolean; image: string }> {
+    return new Promise((resolve, reject) => {
+        exec(`docker images | grep "${imageName}"`, (error, stdout, stderr) => {
+            if (error) {
+                console.log(`Image doesn't exists`);
+                resolve({ imageExists: false, image: '' })
+                return;
+            }
+
+            const output = stdout.trim().split(' ')[0];
+            console.log('outout: ', output);
+            if (output) {
+                resolve({ imageExists: true, image: output });
+            }
+        })
+    })
+}
+
+async function checkContainerExists(containerName: string): Promise<{ containerExists: boolean; container: string }> {
     return new Promise((resolve, reject) => {
         exec(`docker ps -a --filter "name=${containerName}" --format "{{.Names}}"`, (error, stdout, stderr) => {
             if (error) {
@@ -240,32 +283,12 @@ async function checkContainerExists(containerName: string): Promise<{ containerE
 
             const output = stdout.trim(); // Get container name
             if (output) {
-                resolve({ containerExists: true, name: output });
+                resolve({ containerExists: true, container: output });
             } else {
-                resolve({ containerExists: false, name: '' });
+                resolve({ containerExists: false, container: '' });
             }
         });
     });
-}
-
-async function checkImageExists(name: string): Promise<{ imageExists: boolean; name: string }> {
-    return new Promise((resolve, reject) => {
-        exec(`docker images -f "references="${name}`, (error, stdout, stderr) => {
-            if (error) {
-                reject('Error executing the command');
-                return;
-            }
-
-            const output = stdout.trim();
-            if (output) {
-                resolve({ imageExists: true, name: output });
-            } else {
-                resolve({ imageExists: false, name: "" });
-            }
-        })
-    })
-    return { imageExists: true, name: "" }
-
 }
 
 function checkVersion(name: string | ''): number {

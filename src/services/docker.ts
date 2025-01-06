@@ -3,6 +3,8 @@ import fs from "fs";
 import { exec, execSync } from "child_process";
 import { getServiceRuntime, ServiceRuntimeId } from "@/types";
 import { stderr, stdout } from "process";
+import { rejects } from "assert";
+import { Resolver } from "dns";
 
 const prisma = new PrismaClient();
 
@@ -200,7 +202,7 @@ async function buildAndRunWebServiceContainer(service: Service & { WebService: W
     if (containerExists) {
         try {
             // Check container version
-            const version = await checkContainerVersion(name) + 1;
+            const version = await checkVersion(name) + 1;
 
             // Run Docker container
             console.log("Running Docker container...");
@@ -246,7 +248,30 @@ async function checkContainerExists(containerName: string): Promise<{ containerE
     });
 }
 
-function checkContainerVersion(containerName: string | ''): number {
-    const version = containerName.split('_').pop();
+async function checkImageExists(name: string): Promise<{ imageExists: boolean; name: string }> {
+    return new Promise((resolve, reject) => {
+        exec(`docker images -f "references="${name}`, (error, stdout, stderr) => {
+            if (error) {
+                reject('Error executing the command');
+                return;
+            }
+
+            const output = stdout.trim();
+            if (output) {
+                resolve({ imageExists: true, name: output });
+            } else {
+                resolve({ imageExists: false, name: "" });
+            }
+        })
+    })
+    return { imageExists: true, name: "" }
+
+}
+
+function checkVersion(name: string | ''): number {
+    const version = name.split('_').pop();
     return Number(version);
 }
+
+//TODO: Check image version and create de new version
+// First, create docker image, then create docker container, only if the last way was successfully

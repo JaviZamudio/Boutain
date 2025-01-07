@@ -187,6 +187,7 @@ async function buildAndRunWebServiceContainer(service: Service & { WebService: W
     if (!fs.existsSync('./docker')) {
         fs.mkdirSync('./docker');
     }
+
     // Write Dockerfile to the directory
     console.log("Writing Dockerfile...");
     fs.writeFileSync(`./docker/${containerName}-Dockerfile`, dockerfile);
@@ -197,37 +198,98 @@ async function buildAndRunWebServiceContainer(service: Service & { WebService: W
     // Check if a container exists
     const { containerExists, container } = await checkContainerExists(containerName);
 
-    const newImageName = await createImage(imageExists, imageName, containerName);
+    console.log(image);
+    console.log(container);
 
-    if (containerExists) {
+    if (imageExists && containerExists) {
         try {
-            // Check container version
-            const version = await checkVersion(container) + 1;
+            const imageVersion = await checkVersion(image) + 1; // New image version
+            const containerVersion = await checkVersion(container) + 1; // New container version
+            const newImageName = `${imageName}_${imageVersion}`;
+            console.log("Building Docker image...");
+            const newImage = execSync(`docker build --no-cache -t ${newImageName} -f ./docker/${containerName}-Dockerfile .`);
 
-            // Run Docker container
-            console.log("Running Docker container...");
-            const newContainerName = `${containerName}_${version}`;
-            const newContainer = execSync(`docker run -d -p 6000:${internalPort} --network ${networkName} --name ${newContainerName} --restart always ${newImageName}`);
+            if (newImage) {
+                console.log("Running new docker container");
+                const newContainerName = `${containerName}_${containerVersion}`;
+                const newContainer = execSync(`docker run -d -p 6000:${internalPort} --network ${networkName} --name ${newContainerName} --restart always ${newImageName}`);
 
-            if (newContainer) {
-                // Delete the last container
-                console.log(`Killing existing container... ${name}`);
-                execSync(`docker container rm --force ${name}`);
+                console.log('New container');
+                console.log(newContainer);
+                if (newContainer) {
+                    // Kill last container
+                    console.log(`Killing existing container...`);
+                    execSync(`docker container rm --force ${container}`);
 
-                // Reassign the same port to the container
-                execSync(`docker container rm --force ${newContainerName}`);
-                execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${newContainerName} --restart always ${newImageName}`);
+                    // Kill last image
+                    console.log("Killing docker image...");
+                    execSync(`docker rmi "${image}"`);
+                    console.log('si mata la utima image')
+                    // First the new container and then reassign the same port to the container
+                    execSync(`docker container rm --force ${newContainerName}`);
+                    execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${newContainerName} --restart always ${newImageName}`);
+
+                } else {
+                    // Kill new image
+                    console.log("Killing docker image...");
+                    execSync(`docker rmi $(docker images | grep "${newImageName}")`);
+                }
+            } else {
+                return Error('Error to deploy service');
             }
+
         } catch (error) {
             console.log(error);
-            // Ignore error if container doesn't exist
-            console.log(`No container found with name ${containerName}`);
+            return 'Error to deloy service'
         }
+
     } else {
-        // Run first Docker container
-        console.log("Running Docker container...");
-        execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${containerName}_1 --restart always ${imageName}_1`);
+        // Build first image and first container 
+        try {
+            // Build first docker image
+            console.log("Building Docker image...");
+            execSync(`docker build --no-cache -t ${imageName}_1 -f ./docker/${containerName}-Dockerfile .`);
+
+            // Run first Docker container
+            console.log("Running Docker container...");
+            execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${containerName}_1 --restart always ${imageName}_1`);
+        } catch (error) {
+
+        }
     }
+
+    // // Build docker image
+    // const newImageName = await buildImage(imageExists, image, containerName, imageName);
+    // return;
+    // if (containerExists) {
+    //     try {
+    //         // Check container version
+    //         const version = await checkVersion(container) + 1;
+
+    //         // Run Docker container
+    //         console.log("Running Docker container...");
+    //         const newContainerName = `${containerName}_${version}`;
+    //         const newContainer = execSync(`docker run -d -p 6000:${internalPort} --network ${networkName} --name ${newContainerName} --restart always ${newImageName}`);
+
+    //         if (newContainer) {
+    //             // Delete the last container
+    //             console.log(`Killing existing container... ${name}`);
+    //             execSync(`docker container rm --force ${name}`);
+
+    //             // Reassign the same port to the container
+    //             execSync(`docker container rm --force ${newContainerName}`);
+    //             execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${newContainerName} --restart always ${newImageName}`);
+    //         }
+    //     } catch (error) {
+    //         console.log(error);
+    //         // Ignore error if container doesn't exist
+    //         console.log(`No container found with name ${containerName}`);
+    //     }
+    // } else {
+    //     // Run first Docker container
+    //     console.log("Running Docker container...");
+    //     execSync(`docker run -d -p ${service.port}:${internalPort} --network ${networkName} --name ${containerName}_1 --restart always ${imageName}_1`);
+    // }
 }
 
 async function checkImageExists(imageName: string): Promise<{ imageExists: boolean; image: string }> {
@@ -271,19 +333,21 @@ function checkVersion(name: string | ''): number {
     return Number(version);
 }
 
-async function createImage(imageExists: boolean, imageName: string, containerName: string): Promise<string | undefined> {
+async function buildImage(imageExists: boolean, image: string, containerName: string, imageName: string): Promise<string | undefined> {
     if (imageExists) {
         try {
-            const imageVersion = await checkVersion(imageName) + 1;
+            const imageVersion = await checkVersion(image) + 1;
             const newImageName = `${imageName}_${imageVersion}`;
+            console.log(newImageName, "new image name");
             // Build new docker image
             console.log("Building Docker image...");
             const newImage = execSync(`docker build --no-cache -t ${newImageName} -f ./docker/${containerName}-Dockerfile .`);
 
+            console.log(newImage);
             if (newImage) {
                 // Delete last image
                 console.log("Killing docker image...");
-                execSync(`docker rmi $(docker images | grep ${imageName})`);
+                execSync(`docker rmi $(docker images | grep ${image})`);
             }
             return newImageName;
         } catch (error) {

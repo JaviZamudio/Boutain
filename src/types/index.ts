@@ -102,6 +102,7 @@ export const serviceRuntimes: ServiceRuntime[] = [
 export type ServiceTypeId = "webService" | "database" | "objectStorage" | "staticWebsite";
 export type ServiceRuntimeId = "mongodb" | "mysql" | "minio" | "nodejs" | "postgresql" | ".net"
 export type ServiceType = typeof serviceTypes[number];
+
 export type ServiceRuntime = {
     dbSettings?: {
         initDb: string,
